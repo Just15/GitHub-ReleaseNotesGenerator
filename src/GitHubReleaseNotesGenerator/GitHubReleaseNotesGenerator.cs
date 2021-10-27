@@ -1,4 +1,5 @@
 ﻿using Octokit;
+using System.Threading.Tasks;
 
 namespace GitHubReleaseNotesGenerator
 {
@@ -25,6 +26,11 @@ namespace GitHubReleaseNotesGenerator
             {
                 Credentials = credentials
             };
+        }
+
+        public async Task DoStuff()
+        {
+            Octokit.Repository repository = await gitHubClient.Repository.Get("Just15", "PdfSharpWrapper");
         }
     }
 }
