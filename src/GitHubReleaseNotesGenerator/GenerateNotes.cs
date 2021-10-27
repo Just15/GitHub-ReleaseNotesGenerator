@@ -2,9 +2,14 @@
 {
     public record GenerateNotes
     {
-        public string Owner { get; init; }
-        public string Repo { get; init; }
-
         public string TagName { get; init; }
+        public string TargetCommitish { get; init; }
+        public string PreviousTagName { get; init; }
+        public string ConfigurationFilePath { get; init; }
+
+        public GenerateNotes(string tagName)
+        {
+            TagName = tagName;
+        }
     }
 }

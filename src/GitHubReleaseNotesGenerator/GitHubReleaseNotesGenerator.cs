@@ -1,4 +1,6 @@
 ﻿using Octokit;
+using System;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace GitHubReleaseNotesGenerator
@@ -14,6 +16,10 @@ namespace GitHubReleaseNotesGenerator
     {
         public string RepositoryOwner { get; private set; }
         public string RepositoryName { get; private set; }
+        public string PostGenerateNotesUri
+        {
+            get { return $"{RepositoryOwner}/{RepositoryName}/releases/generate-notes"; }
+        }
 
         private GitHubClient gitHubClient;
 
@@ -30,7 +36,10 @@ namespace GitHubReleaseNotesGenerator
 
         public async Task DoStuff()
         {
-            Octokit.Repository repository = await gitHubClient.Repository.Get("Just15", "PdfSharpWrapper");
+            var repository = await gitHubClient.Repository.Get("Just15", "PdfSharpWrapper");
+
+            var uriString = $"https://api.github.com/repos/{PostGenerateNotesUri}";
+            IApiResponse<HttpResponseMessage> apiResponse = await gitHubClient.Connection.Post<HttpResponseMessage>(new Uri(uriString), new GenerateNotes("0.2.0"), "application/json", "application/json");
         }
     }
 }
