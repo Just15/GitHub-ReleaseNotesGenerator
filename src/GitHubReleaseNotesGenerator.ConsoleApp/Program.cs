@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Octokit;
+using System;
+using System.Net.Http;
 
 namespace GitHubReleaseNotesGenerator.ConsoleApp
 {
@@ -6,7 +8,10 @@ namespace GitHubReleaseNotesGenerator.ConsoleApp
     {
         private static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            HttpClient gitHubClient = new HttpClient
+            {
+                BaseAddress = new Uri("https://api.github.com/repos/octocat/")
+            };
         }
     }
 }
