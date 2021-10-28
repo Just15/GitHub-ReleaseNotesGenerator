@@ -36,10 +36,12 @@ namespace GitHubReleaseNotesGenerator
 
         public async Task DoStuff()
         {
-            var repository = await gitHubClient.Repository.Get("Just15", "PdfSharpWrapper");
+            var repository = await gitHubClient.Repository.Get("Just15", "GitVersion-PdfSharpWrapper");
 
+            // Post - /repos/{owner}/{repo}/releases/generate-notes
             var uriString = $"https://api.github.com/repos/{PostGenerateNotesUri}";
-            IApiResponse<HttpResponseMessage> apiResponse = await gitHubClient.Connection.Post<HttpResponseMessage>(new Uri(uriString), new GenerateNotes("0.2.0"), "application/json", "application/json");
+            IApiResponse<HttpResponseMessage> apiResponse = await gitHubClient.Connection.Post<HttpResponseMessage>(new Uri(uriString),
+                new GenerateNotes("1.0.5") , "application/json", "application/json");
         }
     }
 }

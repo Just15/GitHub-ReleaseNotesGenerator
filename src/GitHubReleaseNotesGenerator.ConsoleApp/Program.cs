@@ -27,8 +27,6 @@ namespace GitHubReleaseNotesGenerator.ConsoleApp
             };
 
             await gitHubReleaseNotesGenerator.DoStuff();
-            // Post - /repos/{owner}/{repo}/releases/generate-notes
-            var response = await gitHubClient.PostAsJsonAsync(gitHubReleaseNotesGenerator.PostGenerateNotesUri, new GenerateNotes("0.1.0"));
         }
     }
 }
