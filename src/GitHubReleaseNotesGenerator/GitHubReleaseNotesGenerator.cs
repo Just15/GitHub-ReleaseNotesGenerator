@@ -1,4 +1,5 @@
 ﻿using Octokit;
+using System.Threading.Tasks;
 
 namespace GitHubReleaseNotesGenerator
 {
@@ -6,20 +7,26 @@ namespace GitHubReleaseNotesGenerator
 
     public class GitHubReleaseNotesGenerator
     {
-        public string RepositoryOwner { get; private set; }
-        public string RepositoryName { get; private set; }
-
+        private string repositoryOwner;
+        private string repositoryName;
         private GitHubClient gitHubClient;
 
         public GitHubReleaseNotesGenerator(string repositoryOwner, string repositoryName, Credentials credentials)
         {
-            RepositoryOwner = repositoryOwner;
-            RepositoryName = repositoryName;
+            this.repositoryOwner = repositoryOwner;
+            this.repositoryName = repositoryName;
 
             gitHubClient = new GitHubClient(new ProductHeaderValue(repositoryName))
             {
                 Credentials = credentials
             };
+        }
+
+        public async Task GenerateReleaseNotes()
+        {
+            var milestones = await gitHubClient.Issue.Milestone.GetAllForRepository(repositoryOwner, repositoryName);
+
+            var allIssues = await gitHubClient.Issue.GetAllForRepository(repositoryOwner, repositoryName);
         }
     }
 }
