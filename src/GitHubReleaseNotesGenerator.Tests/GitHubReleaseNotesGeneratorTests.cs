@@ -2,8 +2,9 @@ using NUnit.Framework;
 
 namespace GitHubReleaseNotesGenerator.Tests
 {
-    public class Tests
+    public class GitHubReleaseNotesGeneratorTests
     {
+
         [SetUp]
         public void Setup()
         {
