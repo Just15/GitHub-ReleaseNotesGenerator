@@ -10,10 +10,10 @@ namespace GitHubReleaseNotesGenerator.ConsoleApp
             var gitHubReleaseNotesGenerator = new GitHubReleaseNotesGenerator(
                 "Just15",
                 "GitVersion-PdfSharpWrapper",
-                new Credentials("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"));
+                new Credentials(""));
 
-            ReleaseNotesRequest releaseNotesRequest = new ReleaseNotesRequest();
-            var response = await gitHubReleaseNotesGenerator.GenerateReleaseNotes(releaseNotesRequest);
+            var defaultRequest = await gitHubReleaseNotesGenerator.CreateDefaultReleaseNotesRequest("Milestone 2");
+            var response = await gitHubReleaseNotesGenerator.GenerateReleaseNotes(defaultRequest);
         }
     }
 }

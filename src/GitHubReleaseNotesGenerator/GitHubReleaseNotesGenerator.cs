@@ -1,5 +1,6 @@
 ﻿using Octokit;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace GitHubReleaseNotesGenerator
@@ -27,42 +28,58 @@ namespace GitHubReleaseNotesGenerator
             };
         }
 
-        public async Task<string> GenerateReleaseNotes(ReleaseNotesRequest releaseNotesRequest)
+        public async Task<ReleaseNotesResponse> GenerateReleaseNotes(ReleaseNotesRequest releaseNotesRequest)
         {
-            var milestones = await gitHubClient.Issue.Milestone.GetAllForRepository(repositoryOwner, repositoryName);
+            var response = new ReleaseNotesResponse { Miltestone = releaseNotesRequest.Miltestone };
 
-            var allIssues = await gitHubClient.Issue.GetAllForRepository(repositoryOwner, repositoryName);
+            foreach (var section in releaseNotesRequest.Sections)
+            {
+                var issues = await gitHubClient.Issue.GetAllForRepository(repositoryOwner, repositoryName, section.RepositoryIssueRequest);
+                response.Sections.Add(new ReleaseNoteSectionResponse { Image = section.Image, Title = section.Title, Issues = issues });
+            }
 
-            return null;
+            return response;
         }
 
-        public async Task GetRepositoryIssueRequest(RepositoryIssueRequest repositoryIssueRequest)
+        public async Task<int> GetMilestoneNumberFromTitle(string milestoneTitle)
         {
-            IReadOnlyList<Issue> issues = await gitHubClient.Issue.GetAllForRepository(repositoryOwner, repositoryName, repositoryIssueRequest);
+            var allMilestones = await gitHubClient.Issue.Milestone.GetAllForRepository(repositoryOwner, repositoryName);
+            var milestone = allMilestones.Single(m => m.Title == milestoneTitle);
+            return milestone.Number;
         }
 
-        public ReleaseNotesRequest CreateDefaultReleaseNotesRequest()
+        public async Task<ReleaseNotesRequest> CreateDefaultReleaseNotesRequest(string milestoneTitle)
         {
-            var defaultReleaseNotesRequest = new ReleaseNotesRequest();
-            return defaultReleaseNotesRequest;
-        }
+            var milestoneNumber = await GetMilestoneNumberFromTitle(milestoneTitle);
 
-        private void InitializeRepositoryIssueRequest()
-        {
-            RepositoryIssueRequest repositoryIssueRequest = new RepositoryIssueRequest();
+            // Enhancements
+            var enhancementsSectionRequest = new ReleaseNoteSectionRequest
+            {
+                Image = "EnhancementsImage",
+                Title = "Enhancements",
+                RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString() }
+            };
+            enhancementsSectionRequest.RepositoryIssueRequest.Labels.Add("enhancement");
 
-            // RepositoryIssueRequest
-            repositoryIssueRequest.Milestone = null;
-            repositoryIssueRequest.Assignee = null;
-            repositoryIssueRequest.Creator = null;
-            repositoryIssueRequest.Mentioned = null;
-            // IssueRequest
-            repositoryIssueRequest.Filter = new IssueFilter();
-            repositoryIssueRequest.State = new ItemStateFilter();
-            repositoryIssueRequest.Labels.Add("");
-            repositoryIssueRequest.SortProperty = new IssueSort();
-            repositoryIssueRequest.SortDirection = new SortDirection();
-            repositoryIssueRequest.Since = null;
+            // Bugs
+            var bugsSectionRequest = new ReleaseNoteSectionRequest
+            {
+                Image = "BugsImage",
+                Title = "Bugs",
+                RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString() }
+            };
+            bugsSectionRequest.RepositoryIssueRequest.Labels.Add("bug");
+
+            // Request
+            return new ReleaseNotesRequest
+            {
+                Miltestone = milestoneTitle,
+                Sections = new List<ReleaseNoteSectionRequest>
+                {
+                    enhancementsSectionRequest,
+                    bugsSectionRequest
+                }
+            };
         }
     }
 }

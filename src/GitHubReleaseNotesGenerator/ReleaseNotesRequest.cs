@@ -2,8 +2,8 @@
 
 namespace GitHubReleaseNotesGenerator
 {
-    public class ReleaseNotesRequest
+    public class ReleaseNotesRequest : BaseReleaseNotes
     {
-        public List<ReleaseNoteSection> Sections { get; set; }
+        public List<ReleaseNoteSectionRequest> Sections { get; set; }
     }
 }

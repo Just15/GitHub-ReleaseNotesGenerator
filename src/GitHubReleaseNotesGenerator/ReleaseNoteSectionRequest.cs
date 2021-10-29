@@ -2,10 +2,8 @@
 
 namespace GitHubReleaseNotesGenerator
 {
-    public class ReleaseNoteSection
+    public class ReleaseNoteSectionRequest : BaseReleaseNoteSection
     {
-        public string Image { get; set; }
-        public string Title { get; set; }
         public RepositoryIssueRequest RepositoryIssueRequest { get; set; }
     }
 }
