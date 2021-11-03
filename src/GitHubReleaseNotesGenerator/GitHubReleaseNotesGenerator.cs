@@ -1,5 +1,4 @@
 ﻿using Octokit;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -55,14 +54,22 @@ namespace GitHubReleaseNotesGenerator
             {
                 if (section.Issues.Count > 0)
                 {
+                    // Section Title
                     stringBuilder.AppendLine($"# {section.Emoji} {section.Title}");
                     stringBuilder.AppendLine();
 
+                    // Section Issues
                     foreach (var issue in section.Issues)
                     {
                         stringBuilder.AppendLine($"* [#{issue.Number}]({issue.Url}) {issue.Title}");
                     }
                     stringBuilder.AppendLine();
+
+                    // Contributors
+                    if (releaseNotesRequest.IncludeContributors)
+                    {
+                        AddContributors(stringBuilder);
+                    }
                 }
             }
 
@@ -135,6 +142,11 @@ namespace GitHubReleaseNotesGenerator
             };
         }
 
+        public static void AddContributors(StringBuilder stringBuilder)
+        {
+            // TODO
+        }
+
         public static string TryGetEmoji(string title)
         {
             string emoji = string.Empty;
@@ -146,6 +158,10 @@ namespace GitHubReleaseNotesGenerator
             else if (title.Contains("enhancement"))
             {
                 emoji = ":star:";
+            }
+            else if (title.Contains("contributors"))
+            {
+                emoji = ":heart:";
             }
             else if (title.Contains("build"))
             {
