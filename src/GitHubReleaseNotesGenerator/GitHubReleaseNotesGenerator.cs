@@ -13,6 +13,9 @@ namespace GitHubReleaseNotesGenerator
     //      c# - https://github.com/Decathlon/release-notes-generator-action
     // Java - https://github.com/spring-io/github-changelog-generator
 
+    // https://www.webfx.com/tools/emoji-cheat-sheet/
+    // https://github.com/markdown-templates/markdown-emojis
+
     public class GitHubReleaseNotesGenerator
     {
         private readonly string repositoryOwner;
@@ -37,7 +40,7 @@ namespace GitHubReleaseNotesGenerator
             foreach (var section in releaseNotesRequest.Sections)
             {
                 var issues = await gitHubClient.Issue.GetAllForRepository(repositoryOwner, repositoryName, section.RepositoryIssueRequest);
-                response.Sections.Add(new ReleaseNoteSectionResponse { Image = section.Image, Title = section.Title, Issues = issues });
+                response.Sections.Add(new ReleaseNoteSectionResponse { Emoji = section.Emoji, Title = section.Title, Issues = issues });
             }
 
             return response;
@@ -52,12 +55,12 @@ namespace GitHubReleaseNotesGenerator
             {
                 if (section.Issues.Count > 0)
                 {
-                    stringBuilder.AppendLine($"# {GetSectionImage(section.Image)} {section.Title}");
+                    stringBuilder.AppendLine($"# {section.Emoji} {section.Title}");
                     stringBuilder.AppendLine();
 
                     foreach (var issue in section.Issues)
                     {
-                        stringBuilder.AppendLine($"* {issue.Title} [#{issue.Number}]({issue.Url})");
+                        stringBuilder.AppendLine($"* [#{issue.Number}]({issue.Url}) {issue.Title}");
                     }
                     stringBuilder.AppendLine();
                 }
@@ -80,7 +83,7 @@ namespace GitHubReleaseNotesGenerator
             // Enhancements
             var enhancementsSectionRequest = new ReleaseNoteSectionRequest
             {
-                Image = SectionImage.Star,
+                Emoji = ":star:",
                 Title = "Enhancements",
                 RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString() }
             };
@@ -89,7 +92,7 @@ namespace GitHubReleaseNotesGenerator
             // Bugs
             var bugsSectionRequest = new ReleaseNoteSectionRequest
             {
-                Image = SectionImage.Bug,
+                Emoji = ":beetle:",
                 Title = "Bugs",
                 RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString() }
             };
@@ -116,7 +119,7 @@ namespace GitHubReleaseNotesGenerator
             {
                 var section = new ReleaseNoteSectionRequest
                 {
-                    Image = TryGetSectionImage(label.Name),
+                    Emoji = TryGetEmoji(label.Name),
                     Title = label.Name,
                     RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString() }
                 };
@@ -132,30 +135,28 @@ namespace GitHubReleaseNotesGenerator
             };
         }
 
-        public static string GetSectionImage(SectionImage sectionImage) => sectionImage switch
+        public static string TryGetEmoji(string title)
         {
-            SectionImage.NotSpecified or SectionImage.None => string.Empty,
-            SectionImage.Star => "⭐",
-            SectionImage.Bug => "🐞",
-            SectionImage.Tool => "🔨",
-            SectionImage.Heart => "❤️",
-            _ => throw new NotImplementedException(),
-        };
-
-        public static SectionImage TryGetSectionImage(string title)
-        {
-            SectionImage sectionImage = SectionImage.NotSpecified;
+            string emoji = string.Empty;
 
             if (title.Contains("bug"))
             {
-                sectionImage = SectionImage.Bug;
+                emoji = ":beetle:";
             }
             else if (title.Contains("enhancement"))
             {
-                sectionImage = SectionImage.Star;
+                emoji = ":star:";
+            }
+            else if (title.Contains("build"))
+            {
+                emoji = ":wrench:";
+            }
+            else if (title.Contains("help"))
+            {
+                emoji = ":sos:";
             }
 
-            return sectionImage;
+            return emoji;
         }
     }
 }
