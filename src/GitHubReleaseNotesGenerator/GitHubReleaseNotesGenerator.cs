@@ -1,6 +1,8 @@
 ﻿using Octokit;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace GitHubReleaseNotesGenerator
@@ -41,6 +43,29 @@ namespace GitHubReleaseNotesGenerator
             return response;
         }
 
+        public async Task<string> CreateReleaseNotes(ReleaseNotesRequest releaseNotesRequest)
+        {
+            var response = await GenerateReleaseNotes(releaseNotesRequest);
+
+            var stringBuilder = new StringBuilder();
+            foreach (var section in response.Sections)
+            {
+                if (section.Issues.Count > 0)
+                {
+                    stringBuilder.AppendLine($"# {GetSectionImage(section.Image)} {section.Title}");
+                    stringBuilder.AppendLine();
+
+                    foreach (var issue in section.Issues)
+                    {
+                        stringBuilder.AppendLine($"* {issue.Title} [#{issue.Number}]({issue.Url})");
+                    }
+                    stringBuilder.AppendLine();
+                }
+            }
+
+            return stringBuilder.ToString();
+        }
+
         public async Task<int> GetMilestoneNumberFromTitle(string milestoneTitle)
         {
             var allMilestones = await gitHubClient.Issue.Milestone.GetAllForRepository(repositoryOwner, repositoryName);
@@ -55,7 +80,7 @@ namespace GitHubReleaseNotesGenerator
             // Enhancements
             var enhancementsSectionRequest = new ReleaseNoteSectionRequest
             {
-                Image = "EnhancementsImage",
+                Image = SectionImage.Star,
                 Title = "Enhancements",
                 RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString() }
             };
@@ -64,7 +89,7 @@ namespace GitHubReleaseNotesGenerator
             // Bugs
             var bugsSectionRequest = new ReleaseNoteSectionRequest
             {
-                Image = "BugsImage",
+                Image = SectionImage.Bug,
                 Title = "Bugs",
                 RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString() }
             };
@@ -89,8 +114,14 @@ namespace GitHubReleaseNotesGenerator
             var sections = new List<ReleaseNoteSectionRequest>();
             foreach (var label in await gitHubClient.Issue.Labels.GetAllForMilestone(repositoryOwner, repositoryName, milestoneNumber))
             {
-                var section = new ReleaseNoteSectionRequest { Title = label.Name, RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString() } };
+                var section = new ReleaseNoteSectionRequest
+                {
+                    Image = TryGetSectionImage(label.Name),
+                    Title = label.Name,
+                    RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString() }
+                };
                 section.RepositoryIssueRequest.Labels.Add(label.Name);
+
                 sections.Add(section);
             }
 
@@ -99,6 +130,32 @@ namespace GitHubReleaseNotesGenerator
                 Miltestone = milestoneTitle,
                 Sections = sections
             };
+        }
+
+        public static string GetSectionImage(SectionImage sectionImage) => sectionImage switch
+        {
+            SectionImage.NotSpecified or SectionImage.None => string.Empty,
+            SectionImage.Star => "⭐",
+            SectionImage.Bug => "🐞",
+            SectionImage.Tool => "🔨",
+            SectionImage.Heart => "❤️",
+            _ => throw new NotImplementedException(),
+        };
+
+        public static SectionImage TryGetSectionImage(string title)
+        {
+            SectionImage sectionImage = SectionImage.NotSpecified;
+
+            if (title.Contains("bug"))
+            {
+                sectionImage = SectionImage.Bug;
+            }
+            else if (title.Contains("enhancement"))
+            {
+                sectionImage = SectionImage.Star;
+            }
+
+            return sectionImage;
         }
     }
 }

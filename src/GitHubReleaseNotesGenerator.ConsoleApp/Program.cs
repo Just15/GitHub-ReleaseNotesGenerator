@@ -1,4 +1,5 @@
 ﻿using Octokit;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace GitHubReleaseNotesGenerator.ConsoleApp
@@ -15,7 +16,10 @@ namespace GitHubReleaseNotesGenerator.ConsoleApp
             var defaultRequest = await gitHubReleaseNotesGenerator.CreateDefaultReleaseNotesRequest("Milestone 2");
             var allRequest = await gitHubReleaseNotesGenerator.CreateReleaseNotesForAllLabels("Milestone 2");
 
-            var response = await gitHubReleaseNotesGenerator.GenerateReleaseNotes(allRequest);
+            // Write release notes to file
+            string tempFile = "ReleaseNotes.md";
+            var releaseNotes = await gitHubReleaseNotesGenerator.CreateReleaseNotes(allRequest);
+            File.WriteAllText(tempFile, releaseNotes);
         }
     }
 }

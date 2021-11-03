@@ -2,7 +2,7 @@
 {
     public class BaseReleaseNoteSection
     {
-        public string Image { get; set; }
+        public SectionImage Image { get; set; }
         public string Title { get; set; }
     }
 }
