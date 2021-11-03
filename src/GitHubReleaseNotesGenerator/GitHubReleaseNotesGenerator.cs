@@ -19,6 +19,8 @@ namespace GitHubReleaseNotesGenerator
     {
         private readonly string repositoryOwner;
         private readonly string repositoryName;
+        // TODO: Use this more
+        private readonly Repository repository;
         private readonly GitHubClient gitHubClient;
 
         public GitHubReleaseNotesGenerator(string repositoryOwner, string repositoryName, Credentials credentials)
@@ -30,11 +32,13 @@ namespace GitHubReleaseNotesGenerator
             {
                 Credentials = credentials
             };
+
+            repository = gitHubClient.Repository.Get(repositoryOwner, repositoryName).Result;
         }
 
         public async Task<ReleaseNotesResponse> GenerateReleaseNotes(ReleaseNotesRequest releaseNotesRequest)
         {
-            var response = new ReleaseNotesResponse { Miltestone = releaseNotesRequest.Miltestone };
+            var response = new ReleaseNotesResponse { Milestone = releaseNotesRequest.Milestone };
 
             foreach (var section in releaseNotesRequest.Sections)
             {
@@ -61,18 +65,30 @@ namespace GitHubReleaseNotesGenerator
                     // Section Issues
                     foreach (var issue in section.Issues)
                     {
-                        stringBuilder.AppendLine($"* [#{issue.Number}]({issue.Url}) {issue.Title}");
+                        stringBuilder.AppendLine($"* [#{issue.Number}]({issue.HtmlUrl}) {issue.Title}");
                     }
                     stringBuilder.AppendLine();
-
-                    // Contributors
-                    if (releaseNotesRequest.IncludeContributors)
-                    {
-                        var contributors = GetContributors(response);
-                        AddContributors(stringBuilder, contributors);
-                        stringBuilder.AppendLine();
-                    }
                 }
+            }
+
+            // Unlabeled
+            if (releaseNotesRequest.IncludeUnlabeled)
+            {
+                var unlabeledIssues = await gitHubClient.Search.SearchIssues(new SearchIssuesRequest
+                {
+                    Repos = new RepositoryCollection { repository.FullName },
+                    Milestone = releaseNotesRequest.Milestone,
+                    No = IssueNoMetadataQualifier.Label,
+                });
+                AddSearchIssuesResult(stringBuilder, unlabeledIssues, "unlabeled", "unlabeled");
+            }
+
+            // Contributors
+            if (releaseNotesRequest.IncludeContributors)
+            {
+                var contributors = GetContributors(response);
+                AddContributors(stringBuilder, contributors);
+                stringBuilder.AppendLine();
             }
 
             return stringBuilder.ToString();
@@ -110,7 +126,7 @@ namespace GitHubReleaseNotesGenerator
             // Request
             return new ReleaseNotesRequest
             {
-                Miltestone = milestoneTitle,
+                Milestone = milestoneTitle,
                 Sections = new List<ReleaseNoteSectionRequest>
                 {
                     enhancementsSectionRequest,
@@ -137,11 +153,9 @@ namespace GitHubReleaseNotesGenerator
                 sections.Add(section);
             }
 
-            // TODO: Add issues with the specified milestone but no label.
-
             return new ReleaseNotesRequest
             {
-                Miltestone = milestoneTitle,
+                Milestone = milestoneTitle,
                 Sections = sections
             };
         }
@@ -164,6 +178,21 @@ namespace GitHubReleaseNotesGenerator
             return contributors;
         }
 
+        public static void AddSearchIssuesResult(StringBuilder stringBuilder, SearchIssuesResult searchIssuesResult, string title, string emoji)
+        {
+            if (searchIssuesResult.TotalCount > 0)
+            {
+                stringBuilder.AppendLine($"# {TryGetEmoji(emoji)} {title}");
+                stringBuilder.AppendLine();
+
+                foreach (var issue in searchIssuesResult.Items)
+                {
+                    stringBuilder.AppendLine($"* [#{issue.Number}]({issue.HtmlUrl}) {issue.Title}");
+                }
+                stringBuilder.AppendLine();
+            }
+        }
+
         public static void AddContributors(StringBuilder stringBuilder, List<User> users)
         {
             if (users.Count > 0)
@@ -184,13 +213,17 @@ namespace GitHubReleaseNotesGenerator
         {
             string emoji = string.Empty;
 
+            if (title.Contains("enhancement"))
+            {
+                emoji = ":star:";
+            }
             if (title.Contains("bug"))
             {
                 emoji = ":beetle:";
             }
-            else if (title.Contains("enhancement"))
+            else if (title.Contains("unlabeled"))
             {
-                emoji = ":star:";
+                emoji = ":pushpin:";
             }
             else if (title.Contains("contributors"))
             {

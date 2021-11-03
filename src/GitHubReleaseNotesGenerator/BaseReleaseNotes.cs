@@ -2,6 +2,6 @@
 {
     public class BaseReleaseNotes
     {
-        public string Miltestone { get; set; }
+        public string Milestone { get; set; }
     }
 }
