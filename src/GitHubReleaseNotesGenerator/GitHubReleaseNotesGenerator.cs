@@ -51,25 +51,11 @@ namespace GitHubReleaseNotesGenerator
 
         public async Task<string> CreateReleaseNotes(ReleaseNotesRequest releaseNotesRequest)
         {
+            var stringBuilder = new StringBuilder();
             var response = await GenerateReleaseNotes(releaseNotesRequest);
 
-            var stringBuilder = new StringBuilder();
-            foreach (var section in response.Sections)
-            {
-                if (section.Issues.Count > 0)
-                {
-                    // Section Title
-                    stringBuilder.AppendLine($"# {section.Emoji} {section.Title}");
-                    stringBuilder.AppendLine();
-
-                    // Section Issues
-                    foreach (var issue in section.Issues)
-                    {
-                        stringBuilder.AppendLine($"* [#{issue.Number}]({issue.HtmlUrl}) {issue.Title}");
-                    }
-                    stringBuilder.AppendLine();
-                }
-            }
+            // Sections
+            AddReleaseNoteSections(stringBuilder, response.Sections);
 
             // Unlabeled
             if (releaseNotesRequest.IncludeUnlabeled)
@@ -176,6 +162,26 @@ namespace GitHubReleaseNotesGenerator
             }
 
             return contributors;
+        }
+
+        public static void AddReleaseNoteSections(StringBuilder stringBuilder, List<ReleaseNoteSectionResponse> sections)
+        {
+            foreach (var section in sections)
+            {
+                if (section.Issues.Count > 0)
+                {
+                    // Section Title
+                    stringBuilder.AppendLine($"# {section.Emoji} {section.Title}");
+                    stringBuilder.AppendLine();
+
+                    // Section Issues
+                    foreach (var issue in section.Issues)
+                    {
+                        stringBuilder.AppendLine($"* [#{issue.Number}]({issue.HtmlUrl}) {issue.Title}");
+                    }
+                    stringBuilder.AppendLine();
+                }
+            }
         }
 
         public static void AddSearchIssuesResult(StringBuilder stringBuilder, SearchIssuesResult searchIssuesResult, string title, string emoji)
