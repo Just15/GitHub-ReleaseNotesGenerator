@@ -81,5 +81,24 @@ namespace GitHubReleaseNotesGenerator
                 }
             };
         }
+
+        public async Task<ReleaseNotesRequest> CreateReleaseNotesForAllLabels(string milestoneTitle)
+        {
+            var milestoneNumber = await GetMilestoneNumberFromTitle(milestoneTitle);
+
+            var sections = new List<ReleaseNoteSectionRequest>();
+            foreach (var label in await gitHubClient.Issue.Labels.GetAllForMilestone(repositoryOwner, repositoryName, milestoneNumber))
+            {
+                var section = new ReleaseNoteSectionRequest { Title = label.Name, RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString() } };
+                section.RepositoryIssueRequest.Labels.Add(label.Name);
+                sections.Add(section);
+            }
+
+            return new ReleaseNotesRequest
+            {
+                Miltestone = milestoneTitle,
+                Sections = sections
+            };
+        }
     }
 }

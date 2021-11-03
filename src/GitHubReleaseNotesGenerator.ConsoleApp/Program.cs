@@ -13,7 +13,9 @@ namespace GitHubReleaseNotesGenerator.ConsoleApp
                 new Credentials(""));
 
             var defaultRequest = await gitHubReleaseNotesGenerator.CreateDefaultReleaseNotesRequest("Milestone 2");
-            var response = await gitHubReleaseNotesGenerator.GenerateReleaseNotes(defaultRequest);
+            var allRequest = await gitHubReleaseNotesGenerator.CreateReleaseNotesForAllLabels("Milestone 2");
+
+            var response = await gitHubReleaseNotesGenerator.GenerateReleaseNotes(allRequest);
         }
     }
 }
