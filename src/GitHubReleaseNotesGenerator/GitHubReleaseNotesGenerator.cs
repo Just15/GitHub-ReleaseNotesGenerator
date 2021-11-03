@@ -68,7 +68,9 @@ namespace GitHubReleaseNotesGenerator
                     // Contributors
                     if (releaseNotesRequest.IncludeContributors)
                     {
-                        AddContributors(stringBuilder);
+                        var contributors = GetContributors(response);
+                        AddContributors(stringBuilder, contributors);
+                        stringBuilder.AppendLine();
                     }
                 }
             }
@@ -92,7 +94,7 @@ namespace GitHubReleaseNotesGenerator
             {
                 Emoji = ":star:",
                 Title = "Enhancements",
-                RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString() }
+                RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString(), State = ItemStateFilter.Closed }
             };
             enhancementsSectionRequest.RepositoryIssueRequest.Labels.Add("enhancement");
 
@@ -101,7 +103,7 @@ namespace GitHubReleaseNotesGenerator
             {
                 Emoji = ":beetle:",
                 Title = "Bugs",
-                RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString() }
+                RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString(), State = ItemStateFilter.Closed }
             };
             bugsSectionRequest.RepositoryIssueRequest.Labels.Add("bug");
 
@@ -128,12 +130,14 @@ namespace GitHubReleaseNotesGenerator
                 {
                     Emoji = TryGetEmoji(label.Name),
                     Title = label.Name,
-                    RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString() }
+                    RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString(), State = ItemStateFilter.Closed }
                 };
                 section.RepositoryIssueRequest.Labels.Add(label.Name);
 
                 sections.Add(section);
             }
+
+            // TODO: Add issues with the specified milestone but no label.
 
             return new ReleaseNotesRequest
             {
@@ -142,9 +146,38 @@ namespace GitHubReleaseNotesGenerator
             };
         }
 
-        public static void AddContributors(StringBuilder stringBuilder)
+        public static List<User> GetContributors(ReleaseNotesResponse releaseNotesResponse)
         {
-            // TODO
+            var contributors = new List<User>();
+            foreach (var section in releaseNotesResponse.Sections)
+            {
+                foreach (var issue in section.Issues)
+                {
+                    if (issue.Assignee != null &&
+                        contributors.SingleOrDefault(c => c.Name == issue.Assignee.Name) == null)
+                    {
+                        contributors.Add(issue.Assignee);
+                    }
+                }
+            }
+
+            return contributors;
+        }
+
+        public static void AddContributors(StringBuilder stringBuilder, List<User> users)
+        {
+            if (users.Count > 0)
+            {
+                stringBuilder.AppendLine($"# :heart: Contributors");
+                stringBuilder.AppendLine();
+                stringBuilder.AppendLine("## We'd like to thank all the contributors who worked on this release!");
+                stringBuilder.AppendLine();
+
+                foreach (var user in users)
+                {
+                    stringBuilder.AppendLine($"* [{user.Name ?? user.Login}]({user.HtmlUrl})");
+                }
+            }
         }
 
         public static string TryGetEmoji(string title)
