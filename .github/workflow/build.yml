@@ -1,0 +1,30 @@
+name: build
+
+on:
+  push:
+#    branches: * # run on any branch push
+  pull_request:
+#    branches: [ main ] # run on any pull request
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    # Check out
+    steps:
+    - uses: actions/checkout@v2
+    
+    # Setup .NET
+    - name: Setup .NET 5
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+     
+     # Install NUKE build
+    - name: Install NUKE build
+      run: |
+        dotnet tool install --global Nuke.GlobalTool
+        
+    - name: Run NUKE build (Clean, Restore, Compile, Test)
+      run: nuke
