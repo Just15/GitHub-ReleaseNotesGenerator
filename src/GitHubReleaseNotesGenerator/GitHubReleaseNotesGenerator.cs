@@ -6,15 +6,6 @@ using System.Threading.Tasks;
 
 namespace GitHubReleaseNotesGenerator
 {
-    // https://octokitnet.readthedocs.io/en/latest/getting-started/
-
-    // GitHub Action - https://github.com/marketplace/actions/release-notes-generator
-    //      c# - https://github.com/Decathlon/release-notes-generator-action
-    // Java - https://github.com/spring-io/github-changelog-generator
-
-    // https://www.webfx.com/tools/emoji-cheat-sheet/
-    // https://github.com/markdown-templates/markdown-emojis
-
     public class GitHubReleaseNotesGenerator
     {
         private readonly string repositoryOwner;
@@ -40,10 +31,18 @@ namespace GitHubReleaseNotesGenerator
         {
             var response = new ReleaseNotesResponse { Milestone = releaseNotesRequest.Milestone };
 
-            foreach (var section in releaseNotesRequest.Sections)
+            // Repository Issue Sections
+            foreach (var section in releaseNotesRequest.RepositoryIssueSections)
             {
                 var issues = await gitHubClient.Issue.GetAllForRepository(repositoryOwner, repositoryName, section.RepositoryIssueRequest);
                 response.Sections.Add(new ReleaseNoteSectionResponse { Emoji = section.Emoji, Title = section.Title, Issues = issues });
+            }
+
+            // Search Issue Section
+            foreach (var section in releaseNotesRequest.SearchIssueSections)
+            {
+                var searchIssueResult = await gitHubClient.Search.SearchIssues(section.SearchIssuesRequest);
+                response.Sections.Add(new ReleaseNoteSectionResponse { Emoji = section.Emoji, Title = section.Title, Issues = searchIssueResult.Items });
             }
 
             return response;
@@ -54,20 +53,8 @@ namespace GitHubReleaseNotesGenerator
             var stringBuilder = new StringBuilder();
             var response = await GenerateReleaseNotes(releaseNotesRequest);
 
-            // Sections
+            // Release Notes Section
             AddReleaseNoteSections(stringBuilder, response.Sections);
-
-            // Unlabeled
-            if (releaseNotesRequest.IncludeUnlabeled)
-            {
-                var unlabeledIssues = await gitHubClient.Search.SearchIssues(new SearchIssuesRequest
-                {
-                    Repos = new RepositoryCollection { repository.FullName },
-                    Milestone = releaseNotesRequest.Milestone,
-                    No = IssueNoMetadataQualifier.Label,
-                });
-                AddSearchIssuesResult(stringBuilder, unlabeledIssues, "unlabeled", "unlabeled");
-            }
 
             // Contributors
             if (releaseNotesRequest.IncludeContributors)
@@ -92,7 +79,7 @@ namespace GitHubReleaseNotesGenerator
             var milestoneNumber = await GetMilestoneNumberFromTitle(milestoneTitle);
 
             // Enhancements
-            var enhancementsSectionRequest = new ReleaseNoteSectionRequest
+            var enhancementsSectionRequest = new RepositoryIssueSectionRequest
             {
                 Emoji = ":star:",
                 Title = "Enhancements",
@@ -101,7 +88,7 @@ namespace GitHubReleaseNotesGenerator
             enhancementsSectionRequest.RepositoryIssueRequest.Labels.Add("enhancement");
 
             // Bugs
-            var bugsSectionRequest = new ReleaseNoteSectionRequest
+            var bugsSectionRequest = new RepositoryIssueSectionRequest
             {
                 Emoji = ":beetle:",
                 Title = "Bugs",
@@ -109,14 +96,26 @@ namespace GitHubReleaseNotesGenerator
             };
             bugsSectionRequest.RepositoryIssueRequest.Labels.Add("bug");
 
+            // Unlabeled
+            var unlabeledSectionRequest = new SearchIssueSectionRequest
+            {
+                Emoji = ":pushpin:",
+                Title = "Unlabeled",
+                SearchIssuesRequest = new SearchIssuesRequest { Repos = new RepositoryCollection { repository.FullName }, Milestone = milestoneTitle, No = IssueNoMetadataQualifier.Label }
+            };
+
             // Request
             return new ReleaseNotesRequest
             {
                 Milestone = milestoneTitle,
-                Sections = new List<ReleaseNoteSectionRequest>
+                RepositoryIssueSections = new List<RepositoryIssueSectionRequest>
                 {
                     enhancementsSectionRequest,
                     bugsSectionRequest
+                },
+                SearchIssueSections = new List<SearchIssueSectionRequest>
+                {
+                    unlabeledSectionRequest
                 }
             };
         }
@@ -125,10 +124,11 @@ namespace GitHubReleaseNotesGenerator
         {
             var milestoneNumber = await GetMilestoneNumberFromTitle(milestoneTitle);
 
-            var sections = new List<ReleaseNoteSectionRequest>();
+            // Repository Issue Sections
+            var repositoryIssueSections = new List<RepositoryIssueSectionRequest>();
             foreach (var label in await gitHubClient.Issue.Labels.GetAllForMilestone(repositoryOwner, repositoryName, milestoneNumber))
             {
-                var section = new ReleaseNoteSectionRequest
+                var section = new RepositoryIssueSectionRequest
                 {
                     Emoji = TryGetEmoji(label.Name),
                     Title = label.Name,
@@ -136,13 +136,25 @@ namespace GitHubReleaseNotesGenerator
                 };
                 section.RepositoryIssueRequest.Labels.Add(label.Name);
 
-                sections.Add(section);
+                repositoryIssueSections.Add(section);
             }
+
+            // Search Issue Section
+            var searchIssueSections = new List<SearchIssueSectionRequest>
+            {
+                new SearchIssueSectionRequest
+                {
+                    Emoji = ":pushpin:",
+                    Title = "Unlabeled",
+                    SearchIssuesRequest = new SearchIssuesRequest { Repos = new RepositoryCollection { repository.FullName }, Milestone = milestoneTitle, No = IssueNoMetadataQualifier.Label }
+                }
+            };
 
             return new ReleaseNotesRequest
             {
                 Milestone = milestoneTitle,
-                Sections = sections
+                RepositoryIssueSections = repositoryIssueSections,
+                SearchIssueSections = searchIssueSections
             };
         }
 
@@ -241,7 +253,7 @@ namespace GitHubReleaseNotesGenerator
             }
             else if (title.Contains("help"))
             {
-                emoji = ":sos:";
+                emoji = ":thought_balloon:";
             }
 
             return emoji;

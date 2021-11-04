@@ -5,7 +5,7 @@ namespace GitHubReleaseNotesGenerator
     public class ReleaseNotesRequest : BaseReleaseNotes
     {
         public bool IncludeContributors { get; set; } = true;
-        public bool IncludeUnlabeled { get; set; } = true;
-        public List<ReleaseNoteSectionRequest> Sections { get; set; }
+        public List<RepositoryIssueSectionRequest> RepositoryIssueSections { get; set; }
+        public List<SearchIssueSectionRequest> SearchIssueSections { get; set; }
     }
 }

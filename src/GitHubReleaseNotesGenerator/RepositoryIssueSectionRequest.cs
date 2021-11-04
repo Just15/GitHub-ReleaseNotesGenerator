@@ -2,7 +2,7 @@
 
 namespace GitHubReleaseNotesGenerator
 {
-    public class ReleaseNoteSectionRequest : BaseReleaseNoteSection
+    public class RepositoryIssueSectionRequest : BaseReleaseNoteSection
     {
         public RepositoryIssueRequest RepositoryIssueRequest { get; set; }
     }
