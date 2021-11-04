@@ -4,14 +4,8 @@ namespace GitHubReleaseNotesGenerator.Tests
 {
     public class GitHubReleaseNotesGeneratorTests
     {
-
-        [SetUp]
-        public void Setup()
-        {
-        }
-
         [Test]
-        public void Test1()
+        public void MethodName_StateUnderTest_ExpectedBehavior()
         {
             Assert.Pass();
         }
