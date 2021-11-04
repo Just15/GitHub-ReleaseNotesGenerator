@@ -7,7 +7,6 @@
             string emoji = string.Empty;
 
             // TODO: Change to dictionary that can be overridden
-
             if (title.Contains("enhancement"))
             {
                 emoji = ":star:";

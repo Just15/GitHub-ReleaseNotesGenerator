@@ -1,5 +1,5 @@
-﻿using Octokit;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Octokit;
 
 namespace GitHubReleaseNotesGenerator
 {

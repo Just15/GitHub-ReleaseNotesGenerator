@@ -1,10 +1,10 @@
-﻿using Octokit;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Octokit;
 
 namespace GitHubReleaseNotesGenerator
 {
-    public class ContributorsService
+    public static class ContributorsService
     {
         public static List<User> GetContributors(List<ReleaseNoteSectionResponse> sections)
         {
@@ -12,12 +12,11 @@ namespace GitHubReleaseNotesGenerator
 
             foreach (var section in sections)
             {
-                foreach (var issue in section.Issues)
+                foreach (var assignee in section.Issues.Select(issue => issue.Assignee))
                 {
-                    if (issue.Assignee != null &&
-                        contributors.SingleOrDefault(c => c.Name == issue.Assignee.Name) == null)
+                    if (contributors.SingleOrDefault(c => c.Name == assignee.Name) == null)
                     {
-                        contributors.Add(issue.Assignee);
+                        contributors.Add(assignee);
                     }
                 }
             }

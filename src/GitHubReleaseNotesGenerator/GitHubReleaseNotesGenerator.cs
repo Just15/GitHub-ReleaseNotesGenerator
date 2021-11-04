@@ -1,8 +1,8 @@
-﻿using Octokit;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Octokit;
 
 namespace GitHubReleaseNotesGenerator
 {
@@ -126,15 +126,15 @@ namespace GitHubReleaseNotesGenerator
 
             // Repository Issue Sections
             var repositoryIssueSections = new List<RepositoryIssueSectionRequest>();
-            foreach (var label in await gitHubClient.Issue.Labels.GetAllForMilestone(repositoryOwner, repositoryName, milestoneNumber))
+            foreach (var label in (await gitHubClient.Issue.Labels.GetAllForMilestone(repositoryOwner, repositoryName, milestoneNumber)).Select(label => label.Name))
             {
                 var section = new RepositoryIssueSectionRequest
                 {
-                    DefultEmoji = EmojiHelper.TryGetEmoji(label.Name),
-                    Title = label.Name,
+                    DefultEmoji = EmojiHelper.TryGetEmoji(label),
+                    Title = label,
                     RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString(), State = ItemStateFilter.Closed }
                 };
-                section.RepositoryIssueRequest.Labels.Add(label.Name);
+                section.RepositoryIssueRequest.Labels.Add(label);
 
                 repositoryIssueSections.Add(section);
             }
