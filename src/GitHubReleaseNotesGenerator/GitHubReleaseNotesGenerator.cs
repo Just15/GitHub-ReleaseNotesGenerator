@@ -81,7 +81,7 @@ namespace GitHubReleaseNotesGenerator
             // Enhancements
             var enhancementsSectionRequest = new RepositoryIssueSectionRequest
             {
-                Emoji = ":star:",
+                DefultEmoji = ":star:",
                 Title = "Enhancements",
                 RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString(), State = ItemStateFilter.Closed }
             };
@@ -90,7 +90,7 @@ namespace GitHubReleaseNotesGenerator
             // Bugs
             var bugsSectionRequest = new RepositoryIssueSectionRequest
             {
-                Emoji = ":beetle:",
+                DefultEmoji = ":beetle:",
                 Title = "Bugs",
                 RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString(), State = ItemStateFilter.Closed }
             };
@@ -99,7 +99,7 @@ namespace GitHubReleaseNotesGenerator
             // Unlabeled
             var unlabeledSectionRequest = new SearchIssueSectionRequest
             {
-                Emoji = ":pushpin:",
+                DefultEmoji = ":pushpin:",
                 Title = "Unlabeled",
                 SearchIssuesRequest = new SearchIssuesRequest { Repos = new RepositoryCollection { repository.FullName }, Milestone = milestoneTitle, No = IssueNoMetadataQualifier.Label }
             };
@@ -130,7 +130,7 @@ namespace GitHubReleaseNotesGenerator
             {
                 var section = new RepositoryIssueSectionRequest
                 {
-                    Emoji = TryGetEmoji(label.Name),
+                    DefultEmoji = EmojiHelper.TryGetEmoji(label.Name),
                     Title = label.Name,
                     RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString(), State = ItemStateFilter.Closed }
                 };
@@ -144,7 +144,7 @@ namespace GitHubReleaseNotesGenerator
             {
                 new SearchIssueSectionRequest
                 {
-                    Emoji = ":pushpin:",
+                    DefultEmoji = ":pushpin:",
                     Title = "Unlabeled",
                     SearchIssuesRequest = new SearchIssuesRequest { Repos = new RepositoryCollection { repository.FullName }, Milestone = milestoneTitle, No = IssueNoMetadataQualifier.Label }
                 }
@@ -183,7 +183,7 @@ namespace GitHubReleaseNotesGenerator
                 if (section.Issues.Count > 0)
                 {
                     // Section Title
-                    stringBuilder.AppendLine($"# {section.Emoji} {section.Title}");
+                    stringBuilder.AppendLine($"# {section.Emoji ?? section.DefultEmoji} {section.Title}");
                     stringBuilder.AppendLine();
 
                     // Section Issues
@@ -193,21 +193,6 @@ namespace GitHubReleaseNotesGenerator
                     }
                     stringBuilder.AppendLine();
                 }
-            }
-        }
-
-        public static void AddSearchIssuesResult(StringBuilder stringBuilder, SearchIssuesResult searchIssuesResult, string title, string emoji)
-        {
-            if (searchIssuesResult.TotalCount > 0)
-            {
-                stringBuilder.AppendLine($"# {TryGetEmoji(emoji)} {title}");
-                stringBuilder.AppendLine();
-
-                foreach (var issue in searchIssuesResult.Items)
-                {
-                    stringBuilder.AppendLine($"* [#{issue.Number}]({issue.HtmlUrl}) {issue.Title}");
-                }
-                stringBuilder.AppendLine();
             }
         }
 
@@ -225,38 +210,6 @@ namespace GitHubReleaseNotesGenerator
                     stringBuilder.AppendLine($"* [{user.Name ?? user.Login}]({user.HtmlUrl})");
                 }
             }
-        }
-
-        public static string TryGetEmoji(string title)
-        {
-            string emoji = string.Empty;
-
-            if (title.Contains("enhancement"))
-            {
-                emoji = ":star:";
-            }
-            if (title.Contains("bug"))
-            {
-                emoji = ":beetle:";
-            }
-            else if (title.Contains("unlabeled"))
-            {
-                emoji = ":pushpin:";
-            }
-            else if (title.Contains("contributors"))
-            {
-                emoji = ":heart:";
-            }
-            else if (title.Contains("build"))
-            {
-                emoji = ":wrench:";
-            }
-            else if (title.Contains("help"))
-            {
-                emoji = ":thought_balloon:";
-            }
-
-            return emoji;
         }
     }
 }
