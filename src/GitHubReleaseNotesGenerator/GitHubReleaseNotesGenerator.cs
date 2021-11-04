@@ -35,14 +35,14 @@ namespace GitHubReleaseNotesGenerator
             foreach (var section in releaseNotesRequest.RepositoryIssueSections)
             {
                 var issues = await gitHubClient.Issue.GetAllForRepository(repositoryOwner, repositoryName, section.RepositoryIssueRequest);
-                response.Sections.Add(new ReleaseNoteSectionResponse { Emoji = section.Emoji, Title = section.Title, Issues = issues });
+                response.Sections.Add(new ReleaseNoteSectionResponse { Emoji = section.Emoji, DefultEmoji = section.DefultEmoji, Title = section.Title, Issues = issues });
             }
 
             // Search Issue Section
             foreach (var section in releaseNotesRequest.SearchIssueSections)
             {
                 var searchIssueResult = await gitHubClient.Search.SearchIssues(section.SearchIssuesRequest);
-                response.Sections.Add(new ReleaseNoteSectionResponse { Emoji = section.Emoji, Title = section.Title, Issues = searchIssueResult.Items });
+                response.Sections.Add(new ReleaseNoteSectionResponse { Emoji = section.Emoji, DefultEmoji = section.DefultEmoji, Title = section.Title, Issues = searchIssueResult.Items });
             }
 
             return response;
@@ -59,8 +59,8 @@ namespace GitHubReleaseNotesGenerator
             // Contributors
             if (releaseNotesRequest.IncludeContributors)
             {
-                var contributors = GetContributors(response);
-                AddContributors(stringBuilder, contributors);
+                var contributors = ContributorsService.GetContributors(response.Sections);
+                MarkdownWriterService.WriteUsers(stringBuilder, contributors, $"# :heart: Contributors", "## We'd like to thank all the contributors who worked on this release!");
                 stringBuilder.AppendLine();
             }
 
@@ -158,24 +158,6 @@ namespace GitHubReleaseNotesGenerator
             };
         }
 
-        public static List<User> GetContributors(ReleaseNotesResponse releaseNotesResponse)
-        {
-            var contributors = new List<User>();
-            foreach (var section in releaseNotesResponse.Sections)
-            {
-                foreach (var issue in section.Issues)
-                {
-                    if (issue.Assignee != null &&
-                        contributors.SingleOrDefault(c => c.Name == issue.Assignee.Name) == null)
-                    {
-                        contributors.Add(issue.Assignee);
-                    }
-                }
-            }
-
-            return contributors;
-        }
-
         public static void AddReleaseNoteSections(StringBuilder stringBuilder, List<ReleaseNoteSectionResponse> sections)
         {
             foreach (var section in sections)
@@ -192,22 +174,6 @@ namespace GitHubReleaseNotesGenerator
                         stringBuilder.AppendLine($"* [#{issue.Number}]({issue.HtmlUrl}) {issue.Title}");
                     }
                     stringBuilder.AppendLine();
-                }
-            }
-        }
-
-        public static void AddContributors(StringBuilder stringBuilder, List<User> users)
-        {
-            if (users.Count > 0)
-            {
-                stringBuilder.AppendLine($"# :heart: Contributors");
-                stringBuilder.AppendLine();
-                stringBuilder.AppendLine("## We'd like to thank all the contributors who worked on this release!");
-                stringBuilder.AppendLine();
-
-                foreach (var user in users)
-                {
-                    stringBuilder.AppendLine($"* [{user.Name ?? user.Login}]({user.HtmlUrl})");
                 }
             }
         }
