@@ -20,6 +20,10 @@
             {
                 emoji = ":pushpin:";
             }
+            else if (title.Contains("invalid"))
+            {
+                // TODO
+            }
             else if (title.Contains("contributors"))
             {
                 emoji = ":heart:";
