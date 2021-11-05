@@ -1,10 +1,10 @@
-﻿using Octokit;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
+using Octokit;
 
 namespace GitHubReleaseNotesGenerator.ConsoleApp
 {
-    internal class Program
+    internal static class Program
     {
         private static async Task Main(string[] args)
         {

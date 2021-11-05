@@ -2,18 +2,21 @@ name: build
 
 on:
   push:
-#    branches: * # run on any branch push
-  pull_request:
-#    branches: [ main ] # run on any pull request
 
 jobs:
   build:
+    defaults:
+      run:
+        working-directory: src
 
-    runs-on: ubuntu-latest
+    #runs-on: ubuntu-latest
+    runs-on: windows-latest
 
     # Check out
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 0
     
     # Setup .NET
     - name: Setup .NET 5
