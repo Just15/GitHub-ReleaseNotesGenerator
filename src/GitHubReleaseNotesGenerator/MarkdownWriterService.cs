@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Text;
+using GitHubReleaseNotesGenerator.Models;
 using Octokit;
 
 namespace GitHubReleaseNotesGenerator
@@ -18,6 +19,26 @@ namespace GitHubReleaseNotesGenerator
                 foreach (var user in users)
                 {
                     stringBuilder.AppendLine($"* [{user.Name ?? user.Login}]({user.HtmlUrl})");
+                }
+            }
+        }
+
+        public static void WriteReleaseNoteSections(StringBuilder stringBuilder, List<ReleaseNoteSectionResponse> sections)
+        {
+            foreach (var section in sections)
+            {
+                if (section.Issues.Count > 0)
+                {
+                    // Section Title
+                    stringBuilder.AppendLine($"# {section.Emoji ?? section.DefultEmoji} {section.Title}");
+                    stringBuilder.AppendLine();
+
+                    // Section Issues
+                    foreach (var issue in section.Issues)
+                    {
+                        stringBuilder.AppendLine($"* [#{issue.Number}]({issue.HtmlUrl}) {issue.Title}");
+                    }
+                    stringBuilder.AppendLine();
                 }
             }
         }

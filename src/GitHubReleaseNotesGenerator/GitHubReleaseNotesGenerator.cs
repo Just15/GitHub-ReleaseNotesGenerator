@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GitHubReleaseNotesGenerator.Models;
@@ -39,7 +38,7 @@ namespace GitHubReleaseNotesGenerator
             var releaseNotesResponse = await GenerateReleaseNotes(releaseNotesRequest);
 
             var stringBuilder = new StringBuilder();
-            AddReleaseNoteSections(stringBuilder, releaseNotesResponse.Sections);
+            MarkdownWriterService.WriteReleaseNoteSections(stringBuilder, releaseNotesResponse.Sections);
 
             // Contributors
             if (releaseNotesRequest.IncludeContributors)
@@ -50,26 +49,6 @@ namespace GitHubReleaseNotesGenerator
             }
 
             return stringBuilder.ToString();
-        }
-
-        public static void AddReleaseNoteSections(StringBuilder stringBuilder, List<ReleaseNoteSectionResponse> sections)
-        {
-            foreach (var section in sections)
-            {
-                if (section.Issues.Count > 0)
-                {
-                    // Section Title
-                    stringBuilder.AppendLine($"# {section.Emoji ?? section.DefultEmoji} {section.Title}");
-                    stringBuilder.AppendLine();
-
-                    // Section Issues
-                    foreach (var issue in section.Issues)
-                    {
-                        stringBuilder.AppendLine($"* [#{issue.Number}]({issue.HtmlUrl}) {issue.Title}");
-                    }
-                    stringBuilder.AppendLine();
-                }
-            }
         }
     }
 }
