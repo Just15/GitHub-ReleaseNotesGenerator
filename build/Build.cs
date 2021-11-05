@@ -10,7 +10,6 @@ using Nuke.Common.Tools.GitHub;
 using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Utilities.Collections;
 using Octokit;
-using System;
 using System.IO;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
@@ -48,15 +47,10 @@ class Build : NukeBuild
     private readonly string[] packageExtensions = new string[] { "*.nupkg", "*.snupkg" };
 
     Target Initialize => _ => _
-        .Executes(async () =>
+        .Executes(() =>
         {
             gitHubReleaseNotesGenerator = new GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator(
                 RepositoryOwner, RepositoryName, Milestone, new Credentials("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"));
-
-            var allRequest = await GitHubReleaseNotesGenerator.ReleaseNotesRequestBuilder.CreateForAllLabels(
-                gitHubReleaseNotesGenerator.GitHubClient, gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
-            var releaseNotes = await gitHubReleaseNotesGenerator.CreateReleaseNotes(allRequest);
-            File.WriteAllText("ReleaseNotes.md", releaseNotes);
         });
 
     Target Clean => _ => _
@@ -127,11 +121,14 @@ class Build : NukeBuild
                 Credentials = new Credentials(GitHubAuthenticationToken)
             };
 
+            var allRequest = await GitHubReleaseNotesGenerator.ReleaseNotesRequestBuilder.CreateForAllLabels(
+                gitHubReleaseNotesGenerator.GitHubClient, gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
+
             var newRelease = new NewRelease(GitVersion.MajorMinorPatch)
             {
                 TargetCommitish = GitVersion.Sha,
                 Name = GitVersion.MajorMinorPatch,
-                Body = "Add release notes...",
+                Body = await gitHubReleaseNotesGenerator.CreateReleaseNotes(allRequest),
                 Draft = true,
             };
 
