@@ -12,7 +12,7 @@ namespace GitHubReleaseNotesGenerator
             { "invalid", ":x:" },
             { "contributors", ":heart:" },
             { "build", ":wrench:" },
-            { "help", ":thought_balloon:" }
+            { "help wanted", ":thought_balloon:" }
         };
 
         public static string TryGetEmoji(string title)
