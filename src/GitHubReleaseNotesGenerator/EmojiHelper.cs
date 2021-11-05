@@ -1,42 +1,29 @@
-﻿namespace GitHubReleaseNotesGenerator
+﻿using System.Collections.Generic;
+
+namespace GitHubReleaseNotesGenerator
 {
     public static class EmojiHelper
     {
+        public static Dictionary<string, string> EmojiDictionary { get; set; } = new Dictionary<string, string>
+        {
+            { "enhancement", ":star:" },
+            { "bug", ":beetle:" },
+            { "unlabeled", ":pushpin:" },
+            { "invalid", ":x:" },
+            { "contributors", ":heart:" },
+            { "build", ":wrench:" },
+            { "help wanted", ":thought_balloon:" }
+        };
+
         public static string TryGetEmoji(string title)
         {
-            string emoji = string.Empty;
-
-            // TODO: Change to dictionary that can be overridden
-            if (title.Contains("enhancement"))
+            var containsKey = EmojiDictionary.TryGetValue(title, out string outEmoji);
+            if (!containsKey)
             {
-                emoji = ":star:";
-            }
-            if (title.Contains("bug"))
-            {
-                emoji = ":beetle:";
-            }
-            else if (title.Contains("unlabeled"))
-            {
-                emoji = ":pushpin:";
-            }
-            else if (title.Contains("invalid"))
-            {
-                // TODO
-            }
-            else if (title.Contains("contributors"))
-            {
-                emoji = ":heart:";
-            }
-            else if (title.Contains("build"))
-            {
-                emoji = ":wrench:";
-            }
-            else if (title.Contains("help"))
-            {
-                emoji = ":thought_balloon:";
+                outEmoji = string.Empty;
             }
 
-            return emoji;
+            return outEmoji;
         }
     }
 }
