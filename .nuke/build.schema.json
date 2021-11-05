@@ -18,7 +18,13 @@
           "type": "boolean",
           "description": "Indicates to continue a previously failed build attempt"
         },
+        "GitHubApiKey": {
+          "type": "string"
+        },
         "GitHubAuthenticationToken": {
+          "type": "string"
+        },
+        "GitHubSource": {
           "type": "string"
         },
         "Help": {
@@ -45,11 +51,17 @@
             "VSCode"
           ]
         },
+        "Milestone": {
+          "type": "string"
+        },
         "NoLogo": {
           "type": "boolean",
           "description": "Disables displaying the NUKE logo"
         },
         "NugetApiKey": {
+          "type": "string"
+        },
+        "NuGetSource": {
           "type": "string"
         },
         "Partition": {
@@ -67,6 +79,12 @@
             "type": "string"
           }
         },
+        "RepositoryName": {
+          "type": "string"
+        },
+        "RepositoryOwner": {
+          "type": "string"
+        },
         "Root": {
           "type": "string",
           "description": "Root directory during build execution"
@@ -80,9 +98,11 @@
               "Clean",
               "Compile",
               "CreateGitHubRelease",
+              "Initialize",
               "Pack",
               "Restore",
               "Test",
+              "UploadGitHubPackage",
               "UploadNuGetPackage",
               "UploadReleaseAssetsToGithub"
             ]
@@ -91,9 +111,6 @@
         "Solution": {
           "type": "string",
           "description": "Path to a solution file that is automatically loaded"
-        },
-        "Source": {
-          "type": "string"
         },
         "SymbolSource": {
           "type": "string"
@@ -107,9 +124,11 @@
               "Clean",
               "Compile",
               "CreateGitHubRelease",
+              "Initialize",
               "Pack",
               "Restore",
               "Test",
+              "UploadGitHubPackage",
               "UploadNuGetPackage",
               "UploadReleaseAssetsToGithub"
             ]

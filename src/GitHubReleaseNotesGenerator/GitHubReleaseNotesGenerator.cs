@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using GitHubReleaseNotesGenerator.Models;
@@ -20,7 +21,11 @@ namespace GitHubReleaseNotesGenerator
             };
 
             Repository = GitHubClient.Repository.Get(repositoryOwner, repositoryName).Result;
-            Milestone = GitHubClient.Issue.Milestone.GetAllForRepository(Repository.Id).Result.Single(m => m.Title == milestoneTitle);
+            Milestone = GitHubClient.Issue.Milestone.GetAllForRepository(Repository.Id).Result.SingleOrDefault(m => m.Title == milestoneTitle);
+            if (Milestone == null)
+            {
+                throw new ArgumentException($"A milestone with name '{milestoneTitle}' doesn't exist.");
+            }
         }
 
         public async Task<ReleaseNotesResponse> GenerateReleaseNotes(ReleaseNotesRequest releaseNotesRequest)
