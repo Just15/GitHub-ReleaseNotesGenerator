@@ -12,7 +12,7 @@ namespace GitHubReleaseNotesGenerator
 
             foreach (var section in sections)
             {
-                foreach (var assignee in section.Issues.Select(issue => issue.Assignee))
+                foreach (var assignee in section.Issues.Where(i => i.Assignee != null).Select(i => i.Assignee))
                 {
                     if (contributors.SingleOrDefault(c => c.Name == assignee.Name) == null)
                     {
