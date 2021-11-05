@@ -10,21 +10,26 @@ namespace GitHubReleaseNotesGenerator
     {
         private readonly string repositoryOwner;
         private readonly string repositoryName;
-        // TODO: Use this more
-        private readonly Repository repository;
-        private readonly GitHubClient gitHubClient;
 
-        public GitHubReleaseNotesGenerator(string repositoryOwner, string repositoryName, Credentials credentials)
+        public GitHubClient GitHubClient { get; private set; }
+        // TODO: Use this more and remove 'repositoryOwner' and 'repositoryName'
+        public Repository Repository { get; private set; }
+        public Milestone Milestone { get; private set; }
+
+        public GitHubReleaseNotesGenerator(string repositoryOwner, string repositoryName, string milestoneTitle, Credentials credentials)
         {
             this.repositoryOwner = repositoryOwner;
             this.repositoryName = repositoryName;
 
-            gitHubClient = new GitHubClient(new ProductHeaderValue(repositoryName))
+            GitHubClient = new GitHubClient(new ProductHeaderValue(repositoryName))
             {
                 Credentials = credentials
             };
 
-            repository = gitHubClient.Repository.Get(repositoryOwner, repositoryName).Result;
+            Repository = GitHubClient.Repository.Get(repositoryOwner, repositoryName).Result;
+
+            var allMilestones = GitHubClient.Issue.Milestone.GetAllForRepository(Repository.Id).Result;
+            Milestone = allMilestones.Single(m => m.Title == milestoneTitle);
         }
 
         public async Task<ReleaseNotesResponse> GenerateReleaseNotes(ReleaseNotesRequest releaseNotesRequest)
@@ -34,14 +39,14 @@ namespace GitHubReleaseNotesGenerator
             // Repository Issue Sections
             foreach (var section in releaseNotesRequest.RepositoryIssueSections)
             {
-                var issues = await gitHubClient.Issue.GetAllForRepository(repositoryOwner, repositoryName, section.RepositoryIssueRequest);
+                var issues = await GitHubClient.Issue.GetAllForRepository(repositoryOwner, repositoryName, section.RepositoryIssueRequest);
                 response.Sections.Add(new ReleaseNoteSectionResponse { Emoji = section.Emoji, DefultEmoji = section.DefultEmoji, Title = section.Title, Issues = issues });
             }
 
             // Search Issue Section
             foreach (var section in releaseNotesRequest.SearchIssueSections)
             {
-                var searchIssueResult = await gitHubClient.Search.SearchIssues(section.SearchIssuesRequest);
+                var searchIssueResult = await GitHubClient.Search.SearchIssues(section.SearchIssuesRequest);
                 response.Sections.Add(new ReleaseNoteSectionResponse { Emoji = section.Emoji, DefultEmoji = section.DefultEmoji, Title = section.Title, Issues = searchIssueResult.Items });
             }
 
@@ -65,97 +70,6 @@ namespace GitHubReleaseNotesGenerator
             }
 
             return stringBuilder.ToString();
-        }
-
-        public async Task<int> GetMilestoneNumberFromTitle(string milestoneTitle)
-        {
-            var allMilestones = await gitHubClient.Issue.Milestone.GetAllForRepository(repositoryOwner, repositoryName);
-            var milestone = allMilestones.Single(m => m.Title == milestoneTitle);
-            return milestone.Number;
-        }
-
-        public async Task<ReleaseNotesRequest> CreateDefaultReleaseNotesRequest(string milestoneTitle)
-        {
-            var milestoneNumber = await GetMilestoneNumberFromTitle(milestoneTitle);
-
-            // Enhancements
-            var enhancementsSectionRequest = new RepositoryIssueSectionRequest
-            {
-                DefultEmoji = ":star:",
-                Title = "Enhancements",
-                RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString(), State = ItemStateFilter.Closed }
-            };
-            enhancementsSectionRequest.RepositoryIssueRequest.Labels.Add("enhancement");
-
-            // Bugs
-            var bugsSectionRequest = new RepositoryIssueSectionRequest
-            {
-                DefultEmoji = ":beetle:",
-                Title = "Bugs",
-                RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString(), State = ItemStateFilter.Closed }
-            };
-            bugsSectionRequest.RepositoryIssueRequest.Labels.Add("bug");
-
-            // Unlabeled
-            var unlabeledSectionRequest = new SearchIssueSectionRequest
-            {
-                DefultEmoji = ":pushpin:",
-                Title = "Unlabeled",
-                SearchIssuesRequest = new SearchIssuesRequest { Repos = new RepositoryCollection { repository.FullName }, Milestone = milestoneTitle, No = IssueNoMetadataQualifier.Label }
-            };
-
-            // Request
-            return new ReleaseNotesRequest
-            {
-                Milestone = milestoneTitle,
-                RepositoryIssueSections = new List<RepositoryIssueSectionRequest>
-                {
-                    enhancementsSectionRequest,
-                    bugsSectionRequest
-                },
-                SearchIssueSections = new List<SearchIssueSectionRequest>
-                {
-                    unlabeledSectionRequest
-                }
-            };
-        }
-
-        public async Task<ReleaseNotesRequest> CreateReleaseNotesForAllLabels(string milestoneTitle)
-        {
-            var milestoneNumber = await GetMilestoneNumberFromTitle(milestoneTitle);
-
-            // Repository Issue Sections
-            var repositoryIssueSections = new List<RepositoryIssueSectionRequest>();
-            foreach (var label in (await gitHubClient.Issue.Labels.GetAllForMilestone(repositoryOwner, repositoryName, milestoneNumber)).Select(label => label.Name))
-            {
-                var section = new RepositoryIssueSectionRequest
-                {
-                    DefultEmoji = EmojiHelper.TryGetEmoji(label),
-                    Title = label,
-                    RepositoryIssueRequest = new RepositoryIssueRequest { Milestone = milestoneNumber.ToString(), State = ItemStateFilter.Closed }
-                };
-                section.RepositoryIssueRequest.Labels.Add(label);
-
-                repositoryIssueSections.Add(section);
-            }
-
-            // Search Issue Section
-            var searchIssueSections = new List<SearchIssueSectionRequest>
-            {
-                new SearchIssueSectionRequest
-                {
-                    DefultEmoji = ":pushpin:",
-                    Title = "Unlabeled",
-                    SearchIssuesRequest = new SearchIssuesRequest { Repos = new RepositoryCollection { repository.FullName }, Milestone = milestoneTitle, No = IssueNoMetadataQualifier.Label }
-                }
-            };
-
-            return new ReleaseNotesRequest
-            {
-                Milestone = milestoneTitle,
-                RepositoryIssueSections = repositoryIssueSections,
-                SearchIssueSections = searchIssueSections
-            };
         }
 
         public static void AddReleaseNoteSections(StringBuilder stringBuilder, List<ReleaseNoteSectionResponse> sections)
