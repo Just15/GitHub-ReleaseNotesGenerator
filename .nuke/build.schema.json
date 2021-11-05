@@ -51,6 +51,9 @@
             "VSCode"
           ]
         },
+        "Milestone": {
+          "type": "string"
+        },
         "NoLogo": {
           "type": "boolean",
           "description": "Disables displaying the NUKE logo"
@@ -75,6 +78,12 @@
           "items": {
             "type": "string"
           }
+        },
+        "RepositoryName": {
+          "type": "string"
+        },
+        "RepositoryOwner": {
+          "type": "string"
         },
         "Root": {
           "type": "string",

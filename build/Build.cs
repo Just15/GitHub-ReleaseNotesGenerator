@@ -30,6 +30,9 @@ class Build : NukeBuild
     [GitVersion] readonly GitVersion GitVersion;
     [GitRepository] readonly GitRepository GitRepository;
 
+    [Parameter] readonly string RepositoryOwner = "Just15";
+    [Parameter] readonly string RepositoryName = "GitHubReleaseNotesGenerator";
+    [Parameter] readonly string Milestone = "0.1.0";
     [Parameter] readonly string GitHubAuthenticationToken;
     [Parameter] readonly string NuGetSource = "https://api.nuget.org/v3/index.json";
     [Parameter] readonly string NugetApiKey = "oy2fznuthqtseh3fs5lal37sgupwwneejizu2j4t4c3lp4";
@@ -48,7 +51,7 @@ class Build : NukeBuild
         .Executes(() =>
         {
             gitHubReleaseNotesGenerator = new GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator(
-                "Just15", GitRepository.GetGitHubName(), "0.1.0", new Credentials("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"));
+                RepositoryOwner, RepositoryName, Milestone, new Credentials("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"));
         });
 
     Target Clean => _ => _
@@ -192,7 +195,6 @@ class Build : NukeBuild
                     DotNetNuGetPush(s => s
                         .SetTargetPath(x)
                         .SetSource(GitHubSource)
-                        //.SetSymbolSource(GitHubSource)
                         .SetApiKey(GitHubApiKey)
                     );
                 });
