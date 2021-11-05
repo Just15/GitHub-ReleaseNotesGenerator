@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace GitHubReleaseNotesGenerator
+namespace GitHubReleaseNotesGenerator.Models
 {
     public class ReleaseNotesRequest : BaseReleaseNotes
     {

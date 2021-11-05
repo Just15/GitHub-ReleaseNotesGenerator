@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using GitHubReleaseNotesGenerator.Models;
 using Octokit;
 
 namespace GitHubReleaseNotesGenerator

@@ -1,4 +1,4 @@
-﻿namespace GitHubReleaseNotesGenerator
+﻿namespace GitHubReleaseNotesGenerator.Models
 {
     public class BaseReleaseNoteSection
     {

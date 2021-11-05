@@ -1,6 +1,6 @@
 ﻿using Octokit;
 
-namespace GitHubReleaseNotesGenerator
+namespace GitHubReleaseNotesGenerator.Models
 {
     public class RepositoryIssueSectionRequest : BaseReleaseNoteSection
     {
