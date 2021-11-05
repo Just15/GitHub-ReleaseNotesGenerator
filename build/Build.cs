@@ -48,10 +48,15 @@ class Build : NukeBuild
     private readonly string[] packageExtensions = new string[] { "*.nupkg", "*.snupkg" };
 
     Target Initialize => _ => _
-        .Executes(() =>
+        .Executes(async () =>
         {
             gitHubReleaseNotesGenerator = new GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator(
                 RepositoryOwner, RepositoryName, Milestone, new Credentials("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"));
+
+            var allRequest = await GitHubReleaseNotesGenerator.ReleaseNotesRequestBuilder.CreateForAllLabels(
+                gitHubReleaseNotesGenerator.GitHubClient, gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
+            var releaseNotes = await gitHubReleaseNotesGenerator.CreateReleaseNotes(allRequest);
+            File.WriteAllText("ReleaseNotes.md", releaseNotes);
         });
 
     Target Clean => _ => _

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Text;
 using GitHubReleaseNotesGenerator.Models;
+using Humanizer;
 using Octokit;
 
 namespace GitHubReleaseNotesGenerator
@@ -30,7 +31,7 @@ namespace GitHubReleaseNotesGenerator
                 if (section.Issues.Count > 0)
                 {
                     // Section Title
-                    stringBuilder.AppendLine($"# {section.Emoji ?? section.DefultEmoji} {section.Title}");
+                    stringBuilder.AppendLine($"# {section.Emoji ?? section.DefultEmoji} {section.Title.Humanize(LetterCasing.Title)}");
                     stringBuilder.AppendLine();
 
                     // Section Issues
