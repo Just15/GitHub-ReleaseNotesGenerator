@@ -12,10 +12,10 @@ namespace GitHubReleaseNotesGenerator.ConsoleApp
                 "Just15",
                 "GitVersion-PdfSharpWrapper",
                 "Milestone 2",
-                new Credentials(""));
+                new Credentials("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"));
 
-            var defaultRequest = ReleaseNotesRequestBuilder.CreateDefaultReleaseNotesRequest(gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
-            var allRequest = await ReleaseNotesRequestBuilder.CreateReleaseNotesForAllLabels(gitHubReleaseNotesGenerator.GitHubClient, gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
+            var defaultRequest = ReleaseNotesRequestBuilder.CreateDefault(gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
+            var allRequest = await ReleaseNotesRequestBuilder.CreateForAllLabels(gitHubReleaseNotesGenerator.GitHubClient, gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
 
             // Write release notes to file
             string tempFile = "ReleaseNotes.md";
