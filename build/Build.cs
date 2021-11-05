@@ -10,6 +10,7 @@ using Nuke.Common.Tools.GitHub;
 using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Utilities.Collections;
 using Octokit;
+using System;
 using System.IO;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
@@ -30,16 +31,28 @@ class Build : NukeBuild
     [GitRepository] readonly GitRepository GitRepository;
 
     [Parameter] readonly string GitHubAuthenticationToken;
-    [Parameter] readonly string Source = "https://api.nuget.org/v3/index.json";
+    [Parameter] readonly string NuGetSource = "https://api.nuget.org/v3/index.json";
+    [Parameter] readonly string NugetApiKey = "oy2fznuthqtseh3fs5lal37sgupwwneejizu2j4t4c3lp4";
+    [Parameter] readonly string GitHubSource = "https://nuget.pkg.github.com/OWNER/index.json";
+    [Parameter] readonly string GitHubApiKey = "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";
     [Parameter] readonly string SymbolSource = "https://nuget.smbsrc.net/";
-    [Parameter] readonly string NugetApiKey;
     Release createdRelease;
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
+    GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator gitHubReleaseNotesGenerator;
+    private readonly string[] packageExtensions = new string[] { "*.nupkg", "*.snupkg" };
+
+    Target Initialize => _ => _
+        .Executes(() =>
+        {
+            gitHubReleaseNotesGenerator = new GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator(
+                "Just15", GitRepository.GetGitHubName(), "0.1.0", new Credentials("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"));
+        });
+
     Target Clean => _ => _
-        .Before(Restore)
+        .DependsOn(Initialize)
         .Executes(() =>
         {
             SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
@@ -99,7 +112,7 @@ class Build : NukeBuild
         .Requires(() => Configuration.Equals(Configuration.Release))
         .Executes(async () =>
         {
-            ControlFlow.Assert(GitVersion.BranchName.Equals("master"), "Branch isn't 'master'.");
+            ControlFlow.Assert(GitVersion.BranchName.StartsWith("release/"), "Branch isn't a release.");
 
             GitHubTasks.GitHubClient = new GitHubClient(new ProductHeaderValue(nameof(NukeBuild)))
             {
@@ -124,7 +137,7 @@ class Build : NukeBuild
         {
             ControlFlow.NotNull(createdRelease, $"'createdRelease' is null.");
 
-            GlobFiles(ArtifactsDirectory, "*.nupkg", "*.snupkg")
+            GlobFiles(ArtifactsDirectory, packageExtensions)
                 .NotEmpty()
                 .ForEach(x =>
                 {
@@ -145,22 +158,42 @@ class Build : NukeBuild
         });
 
     Target UploadNuGetPackage => _ => _
-        .Requires(() => Source)
-        .Requires(() => SymbolSource)
+        .Requires(() => NuGetSource)
         .Requires(() => NugetApiKey)
+        .Requires(() => SymbolSource)
         .TriggeredBy(CreateGitHubRelease)
         .Unlisted()
         .Executes(() =>
         {
-            GlobFiles(ArtifactsDirectory, "*.nupkg", "*.snupkg")
+            GlobFiles(ArtifactsDirectory, packageExtensions)
                 .NotEmpty()
                 .ForEach(x =>
                 {
                     DotNetNuGetPush(s => s
                         .SetTargetPath(x)
-                        .SetSource(Source)
+                        .SetSource(NuGetSource)
                         .SetSymbolSource(SymbolSource)
                         .SetApiKey(NugetApiKey)
+                    );
+                });
+        });
+
+    Target UploadGitHubPackage => _ => _
+        .Requires(() => GitHubSource)
+        .Requires(() => GitHubApiKey)
+        .TriggeredBy(CreateGitHubRelease)
+        .Unlisted()
+        .Executes(() =>
+        {
+            GlobFiles(ArtifactsDirectory, packageExtensions)
+                .NotEmpty()
+                .ForEach(x =>
+                {
+                    DotNetNuGetPush(s => s
+                        .SetTargetPath(x)
+                        .SetSource(GitHubSource)
+                        //.SetSymbolSource(GitHubSource)
+                        .SetApiKey(GitHubApiKey)
                     );
                 });
         });
