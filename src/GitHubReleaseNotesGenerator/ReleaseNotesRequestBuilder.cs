@@ -8,7 +8,7 @@ namespace GitHubReleaseNotesGenerator
 {
     public static class ReleaseNotesRequestBuilder
     {
-        public static ReleaseNotesRequest CreateDefaultReleaseNotesRequest(Repository repository, Milestone milestone)
+        public static ReleaseNotesRequest CreateDefault(Repository repository, Milestone milestone)
         {
             // Enhancements
             var enhancementsSectionRequest = new RepositoryIssueSectionRequest
@@ -68,7 +68,7 @@ namespace GitHubReleaseNotesGenerator
             };
         }
 
-        public static async Task<ReleaseNotesRequest> CreateReleaseNotesForAllLabels(GitHubClient gitHubClient, Repository repository, Milestone milestone)
+        public static async Task<ReleaseNotesRequest> CreateForAllLabels(GitHubClient gitHubClient, Repository repository, Milestone milestone)
         {
             // Repository Issue Sections
             var repositoryIssueSections = new List<RepositoryIssueSectionRequest>();
