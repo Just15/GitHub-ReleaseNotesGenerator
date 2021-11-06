@@ -32,10 +32,10 @@ class Build : NukeBuild
     [Parameter] readonly string RepositoryOwner = "Just15";
     [Parameter] readonly string RepositoryName = "GitHubReleaseNotesGenerator";
     [Parameter] readonly string Milestone = "0.1.0";
-    [Parameter] readonly string GitHubAuthenticationToken;
+    //[Parameter] readonly string GitHubAuthenticationToken = "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";
     [Parameter] readonly string NuGetSource = "https://api.nuget.org/v3/index.json";
     [Parameter] readonly string NugetApiKey = "oy2fznuthqtseh3fs5lal37sgupwwneejizu2j4t4c3lp4";
-    [Parameter] readonly string GitHubSource = "https://nuget.pkg.github.com/OWNER/index.json";
+    [Parameter] readonly string GitHubSource = "https://nuget.pkg.github.com/Just15/index.json";
     [Parameter] readonly string GitHubApiKey = "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";
     [Parameter] readonly string SymbolSource = "https://nuget.smbsrc.net/";
     Release createdRelease;
@@ -110,7 +110,7 @@ class Build : NukeBuild
 
     Target CreateGitHubRelease => _ => _
         .DependsOn(Pack)
-        .Requires(() => GitHubAuthenticationToken)
+        .Requires(() => GitHubApiKey)
         .Requires(() => Configuration.Equals(Configuration.Release))
         .Executes(async () =>
         {
@@ -118,7 +118,7 @@ class Build : NukeBuild
 
             GitHubTasks.GitHubClient = new GitHubClient(new ProductHeaderValue(nameof(NukeBuild)))
             {
-                Credentials = new Credentials(GitHubAuthenticationToken)
+                Credentials = new Credentials(GitHubApiKey)
             };
 
             var allRequest = await GitHubReleaseNotesGenerator.ReleaseNotesRequestBuilder.CreateForAllLabels(
@@ -177,7 +177,7 @@ class Build : NukeBuild
                     DotNetNuGetPush(s => s
                         .SetTargetPath(x)
                         .SetSource(NuGetSource)
-                        .SetSymbolSource(SymbolSource)
+                        //.SetSymbolSource(SymbolSource)
                         .SetApiKey(NugetApiKey)
                     );
                 });

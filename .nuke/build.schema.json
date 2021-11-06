@@ -21,9 +21,6 @@
         "GitHubApiKey": {
           "type": "string"
         },
-        "GitHubAuthenticationToken": {
-          "type": "string"
-        },
         "GitHubSource": {
           "type": "string"
         },
