@@ -43,6 +43,7 @@ class Build : NukeBuild
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
     GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator gitHubReleaseNotesGenerator;
+    private readonly string[] packageExtensions = new string[] { "*.nupkg", "*.snupkg" };
 
     Target Initialize => _ => _
         .Executes(() =>
