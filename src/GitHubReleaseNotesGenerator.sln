@@ -3,9 +3,13 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.31729.503
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubReleaseNotesGenerator", "GitHubReleaseNotesGenerator\GitHubReleaseNotesGenerator.csproj", "{FA950231-7AD8-41DF-9D31-A5F39E727F5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubReleaseNotesGenerator", "GitHubReleaseNotesGenerator\GitHubReleaseNotesGenerator.csproj", "{FA950231-7AD8-41DF-9D31-A5F39E727F5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubReleaseNotesGenerator.Tests", "GitHubReleaseNotesGenerator.Tests\GitHubReleaseNotesGenerator.Tests.csproj", "{897643A4-7B49-4604-A8B0-81F7713178FF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubReleaseNotesGenerator.Tests", "GitHubReleaseNotesGenerator.Tests\GitHubReleaseNotesGenerator.Tests.csproj", "{897643A4-7B49-4604-A8B0-81F7713178FF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubReleaseNotesGenerator.ConsoleApp", "GitHubReleaseNotesGenerator.ConsoleApp\GitHubReleaseNotesGenerator.ConsoleApp.csproj", "{AB021637-4E81-4A5C-A1ED-0664F0AA519E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "..\build\_build.csproj", "{EED38522-42D2-45F2-B9C3-694084EB2646}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,6 +17,8 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EED38522-42D2-45F2-B9C3-694084EB2646}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EED38522-42D2-45F2-B9C3-694084EB2646}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA950231-7AD8-41DF-9D31-A5F39E727F5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FA950231-7AD8-41DF-9D31-A5F39E727F5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA950231-7AD8-41DF-9D31-A5F39E727F5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -21,6 +27,10 @@ Global
 		{897643A4-7B49-4604-A8B0-81F7713178FF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{897643A4-7B49-4604-A8B0-81F7713178FF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{897643A4-7B49-4604-A8B0-81F7713178FF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB021637-4E81-4A5C-A1ED-0664F0AA519E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB021637-4E81-4A5C-A1ED-0664F0AA519E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB021637-4E81-4A5C-A1ED-0664F0AA519E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB021637-4E81-4A5C-A1ED-0664F0AA519E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
