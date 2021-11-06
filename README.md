@@ -2,7 +2,7 @@
 
 GitHubReleaseNotesGenerator is a tool to generate GitHub release notes based on labels and searches.
 
-Example project: [Here](https://github.com/Just15/GitHubReleaseNotesGenerator/blob/main/src/GitHubReleaseNotesGenerator.ConsoleApp/Program.cs)
+Example project: [Here](https://github.com/Just15/GitHubReleaseNotesGenerator/blob/release/0.1.0/src/GitHubReleaseNotesGenerator.ConsoleApp/Program.cs)
 
 ## Example Usage
 

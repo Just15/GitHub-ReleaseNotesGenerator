@@ -31,12 +31,11 @@ class Build : NukeBuild
 
     [Parameter] readonly string RepositoryOwner = "Just15";
     [Parameter] readonly string RepositoryName = "GitHubReleaseNotesGenerator";
-    [Parameter] readonly string Milestone = "0.1.0";
-    //[Parameter] readonly string GitHubAuthenticationToken = "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";
+    [Parameter] readonly string Milestone = "0.2.0";
     [Parameter] readonly string NuGetSource = "https://api.nuget.org/v3/index.json";
-    [Parameter] readonly string NugetApiKey = "oy2fznuthqtseh3fs5lal37sgupwwneejizu2j4t4c3lp4";
+    [Parameter] readonly string NugetApiKey;
     [Parameter] readonly string GitHubSource = "https://nuget.pkg.github.com/Just15/index.json";
-    [Parameter] readonly string GitHubApiKey = "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";
+    [Parameter] readonly string GitHubApiKey;
     [Parameter] readonly string SymbolSource = "https://nuget.smbsrc.net/";
     Release createdRelease;
 
@@ -44,13 +43,12 @@ class Build : NukeBuild
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
     GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator gitHubReleaseNotesGenerator;
-    private readonly string[] packageExtensions = new string[] { "*.nupkg", "*.snupkg" };
 
     Target Initialize => _ => _
         .Executes(() =>
         {
             gitHubReleaseNotesGenerator = new GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator(
-                RepositoryOwner, RepositoryName, Milestone, new Credentials("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"));
+                RepositoryOwner, RepositoryName, Milestone, new Credentials(NugetApiKey));
         });
 
     Target Clean => _ => _
@@ -129,7 +127,7 @@ class Build : NukeBuild
                 TargetCommitish = GitVersion.Sha,
                 Name = GitVersion.MajorMinorPatch,
                 Body = await gitHubReleaseNotesGenerator.CreateReleaseNotes(allRequest),
-                Draft = true,
+                //Draft = true,
             };
 
             createdRelease = await GitHubTasks.GitHubClient.Repository.Release.Create(GitRepository.GetGitHubOwner(), GitRepository.GetGitHubName(), newRelease);
@@ -142,7 +140,7 @@ class Build : NukeBuild
         {
             ControlFlow.NotNull(createdRelease, $"'createdRelease' is null.");
 
-            GlobFiles(ArtifactsDirectory, packageExtensions)
+            GlobFiles(ArtifactsDirectory, "*.nupkg")
                 .NotEmpty()
                 .ForEach(x =>
                 {
@@ -170,7 +168,7 @@ class Build : NukeBuild
         .Unlisted()
         .Executes(() =>
         {
-            GlobFiles(ArtifactsDirectory, packageExtensions)
+            GlobFiles(ArtifactsDirectory, "*.nupkg")
                 .NotEmpty()
                 .ForEach(x =>
                 {
@@ -190,7 +188,7 @@ class Build : NukeBuild
         .Unlisted()
         .Executes(() =>
         {
-            GlobFiles(ArtifactsDirectory, packageExtensions)
+            GlobFiles(ArtifactsDirectory, "*.nupkg")
                 .NotEmpty()
                 .ForEach(x =>
                 {
