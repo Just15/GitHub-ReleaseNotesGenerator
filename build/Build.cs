@@ -21,8 +21,6 @@ using static Nuke.Common.Tools.DotNet.DotNetTasks;
 class Build : NukeBuild
 {
     public static int Main() => Execute<Build>(x => x.Compile);
-    readonly string NugetApiKey = "REPLACE";
-    readonly string GitHubApiKey = "REPLACE";
 
     [Solution(GenerateProjects = true)] readonly Solution Solution;
     [GitVersion] readonly GitVersion GitVersion;
@@ -31,8 +29,10 @@ class Build : NukeBuild
     [Parameter] readonly string RepositoryOwner = "Just15";
     [Parameter] readonly string RepositoryName = "GitHubReleaseNotesGenerator";
     [Parameter] readonly string Milestone = "0.2.0";
-    [Parameter] readonly string NuGetSource = "https://api.nuget.org/v3/index.json";
     [Parameter] readonly string GitHubSource = "https://nuget.pkg.github.com/Just15/index.json";
+    [Parameter] readonly string GitHubApiKey;
+    [Parameter] readonly string NuGetSource = "https://api.nuget.org/v3/index.json";
+    [Parameter] readonly string NugetApiKey;
     [Parameter] readonly string SymbolSource = "https://nuget.smbsrc.net/";
     Release createdRelease;
 

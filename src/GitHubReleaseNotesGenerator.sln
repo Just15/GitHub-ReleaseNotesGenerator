@@ -7,9 +7,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubReleaseNotesGenerator
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubReleaseNotesGenerator.Tests", "GitHubReleaseNotesGenerator.Tests\GitHubReleaseNotesGenerator.Tests.csproj", "{897643A4-7B49-4604-A8B0-81F7713178FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitHubReleaseNotesGenerator.ConsoleApp", "GitHubReleaseNotesGenerator.ConsoleApp\GitHubReleaseNotesGenerator.ConsoleApp.csproj", "{AB021637-4E81-4A5C-A1ED-0664F0AA519E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitHubReleaseNotesGenerator.ConsoleApp", "GitHubReleaseNotesGenerator.ConsoleApp\GitHubReleaseNotesGenerator.ConsoleApp.csproj", "{AB021637-4E81-4A5C-A1ED-0664F0AA519E}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "_build", "..\build\_build.csproj", "{EED38522-42D2-45F2-B9C3-694084EB2646}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F5ADC093-7EA3-4481-8EDE-234360BCA26A}"
+	ProjectSection(SolutionItems) = preProject
+		..\.editorconfig = ..\.editorconfig
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,8 +22,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{EED38522-42D2-45F2-B9C3-694084EB2646}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EED38522-42D2-45F2-B9C3-694084EB2646}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA950231-7AD8-41DF-9D31-A5F39E727F5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{FA950231-7AD8-41DF-9D31-A5F39E727F5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA950231-7AD8-41DF-9D31-A5F39E727F5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -31,6 +34,8 @@ Global
 		{AB021637-4E81-4A5C-A1ED-0664F0AA519E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AB021637-4E81-4A5C-A1ED-0664F0AA519E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AB021637-4E81-4A5C-A1ED-0664F0AA519E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EED38522-42D2-45F2-B9C3-694084EB2646}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EED38522-42D2-45F2-B9C3-694084EB2646}.Release|Any CPU.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
