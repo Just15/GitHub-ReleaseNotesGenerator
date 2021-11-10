@@ -31,7 +31,7 @@ namespace GitHubReleaseNotesGenerator
                 if (section.Issues.Count > 0)
                 {
                     // Section Title
-                    stringBuilder.AppendLine($"# {section.Emoji ?? section.DefultEmoji} {section.Title.Humanize(LetterCasing.Title)}");
+                    stringBuilder.AppendLine($"# {section.Emoji} {section.Title.Humanize(LetterCasing.Title)}");
                     stringBuilder.AppendLine();
 
                     // Section Issues

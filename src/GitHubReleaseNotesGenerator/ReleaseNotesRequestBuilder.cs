@@ -10,60 +10,17 @@ namespace GitHubReleaseNotesGenerator
     {
         public static ReleaseNotesRequest CreateDefault(Repository repository, Milestone milestone)
         {
-            // Enhancements
-            var enhancementsSectionRequest = new RepositoryIssueSectionRequest
-            {
-                DefultEmoji = ":star:",
-                Title = "Enhancements",
-                RepositoryIssueRequest = new RepositoryIssueRequest
-                {
-                    Milestone = milestone.Number.ToString(),
-                    State = ItemStateFilter.Closed
-                }
-            };
-            enhancementsSectionRequest.RepositoryIssueRequest.Labels.Add("enhancement");
-
-            // Bugs
-            var bugsSectionRequest = new RepositoryIssueSectionRequest
-            {
-                DefultEmoji = ":beetle:",
-                Title = "Bugs",
-                RepositoryIssueRequest = new RepositoryIssueRequest
-                {
-                    Milestone = milestone.Number.ToString(),
-                    State = ItemStateFilter.Closed
-                }
-            };
-            bugsSectionRequest.RepositoryIssueRequest.Labels.Add("bug");
-
-            // Unlabeled
-            var unlabeledSectionRequest = new SearchIssueSectionRequest
-            {
-                DefultEmoji = ":pushpin:",
-                Title = "Unlabeled",
-                SearchIssuesRequest = new SearchIssuesRequest
-                {
-                    Repos = new RepositoryCollection
-                    {
-                        repository.FullName
-                    },
-                    Milestone = milestone.Title,
-                    No = IssueNoMetadataQualifier.Label
-                }
-            };
-
-            // Request
             return new ReleaseNotesRequest
             {
                 Milestone = milestone.Title,
                 RepositoryIssueSections = new List<RepositoryIssueSectionRequest>
                 {
-                    enhancementsSectionRequest,
-                    bugsSectionRequest
+                    RepositoryIssueSectionRequestBuilder.CreateEnhancementRequest(milestone.Number),
+                    RepositoryIssueSectionRequestBuilder.CreateBugRequest(milestone.Number)
                 },
                 SearchIssueSections = new List<SearchIssueSectionRequest>
                 {
-                    unlabeledSectionRequest
+                    SearchIssueSectionRequestBuilder.CreateUnlabeledRequest(repository.FullName, milestone.Title)
                 }
             };
         }
@@ -74,17 +31,30 @@ namespace GitHubReleaseNotesGenerator
             var repositoryIssueSections = new List<RepositoryIssueSectionRequest>();
             foreach (var label in (await gitHubClient.Issue.Labels.GetAllForMilestone(repository.Id, milestone.Number)).Select(label => label.Name))
             {
-                var section = new RepositoryIssueSectionRequest
+                RepositoryIssueSectionRequest section;
+
+                if (label == "enhancement")
                 {
-                    DefultEmoji = EmojiHelper.TryGetEmoji(label),
-                    Title = label,
-                    RepositoryIssueRequest = new RepositoryIssueRequest
+                    section = RepositoryIssueSectionRequestBuilder.CreateEnhancementRequest(milestone.Number);
+                }
+                else if (label == "bug")
+                {
+                    section = RepositoryIssueSectionRequestBuilder.CreateBugRequest(milestone.Number);
+                }
+                else
+                {
+                    section = new RepositoryIssueSectionRequest
                     {
-                        Milestone = milestone.Number.ToString(),
-                        State = ItemStateFilter.Closed
-                    }
-                };
-                section.RepositoryIssueRequest.Labels.Add(label);
+                        Emoji = EmojiHelper.TryGetEmoji(label),
+                        Title = label,
+                        RepositoryIssueRequest = new RepositoryIssueRequest
+                        {
+                            Milestone = milestone.Number.ToString(),
+                            State = ItemStateFilter.Closed
+                        }
+                    };
+                    section.RepositoryIssueRequest.Labels.Add(label);
+                }
 
                 repositoryIssueSections.Add(section);
             }
@@ -92,20 +62,7 @@ namespace GitHubReleaseNotesGenerator
             // Search Issue Section
             var searchIssueSections = new List<SearchIssueSectionRequest>
             {
-                new SearchIssueSectionRequest
-                {
-                    DefultEmoji = ":pushpin:",
-                    Title = "Unlabeled",
-                    SearchIssuesRequest = new SearchIssuesRequest
-                    {
-                        Repos = new RepositoryCollection
-                        {
-                            repository.FullName
-                        },
-                        Milestone = milestone.Title,
-                        No = IssueNoMetadataQualifier.Label
-                    }
-                }
+                SearchIssueSectionRequestBuilder.CreateUnlabeledRequest(repository.FullName, milestone.Title)
             };
 
             // Request

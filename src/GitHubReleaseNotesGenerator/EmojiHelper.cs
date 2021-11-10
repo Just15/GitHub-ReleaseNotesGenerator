@@ -17,8 +17,7 @@ namespace GitHubReleaseNotesGenerator
 
         public static string TryGetEmoji(string title)
         {
-            var containsKey = EmojiDictionary.TryGetValue(title, out string outEmoji);
-            if (!containsKey)
+            if (!EmojiDictionary.TryGetValue(title, out string outEmoji))
             {
                 outEmoji = string.Empty;
             }
