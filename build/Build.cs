@@ -28,7 +28,7 @@ class Build : NukeBuild
 
     [Parameter] readonly string RepositoryOwner = "Just15";
     [Parameter] readonly string RepositoryName = "GitHubReleaseNotesGenerator";
-    [Parameter] readonly string Milestone = "0.2.0";
+    [Parameter] readonly string Milestone;
     [Parameter] readonly string GitHubSource = "https://nuget.pkg.github.com/Just15/index.json";
     [Parameter] readonly string GitHubApiKey;
     [Parameter] readonly string NuGetSource = "https://api.nuget.org/v3/index.json";
@@ -42,6 +42,7 @@ class Build : NukeBuild
     GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator gitHubReleaseNotesGenerator;
 
     Target Initialize => _ => _
+        .Requires(() => Milestone)
         .Executes(() =>
         {
             gitHubReleaseNotesGenerator = new GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator(
