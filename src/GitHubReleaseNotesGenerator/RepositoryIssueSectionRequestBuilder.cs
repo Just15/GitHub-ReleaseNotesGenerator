@@ -36,5 +36,37 @@ namespace GitHubReleaseNotesGenerator
             repositoryIssueSectionRequest.RepositoryIssueRequest.Labels.Add("bug");
             return repositoryIssueSectionRequest;
         }
+
+        public static RepositoryIssueSectionRequest CreateBuildRequest(int milestoneNumber)
+        {
+            var repositoryIssueSectionRequest = new RepositoryIssueSectionRequest
+            {
+                Emoji = EmojiHelper.TryGetEmoji("build"),
+                Title = "Build",
+                RepositoryIssueRequest = new RepositoryIssueRequest
+                {
+                    Milestone = milestoneNumber.ToString(),
+                    State = ItemStateFilter.Closed
+                }
+            };
+            repositoryIssueSectionRequest.RepositoryIssueRequest.Labels.Add("build");
+            return repositoryIssueSectionRequest;
+        }
+
+        public static RepositoryIssueSectionRequest CreateDocumentationRequest(int milestoneNumber)
+        {
+            var repositoryIssueSectionRequest = new RepositoryIssueSectionRequest
+            {
+                Emoji = EmojiHelper.TryGetEmoji("documentation"),
+                Title = "Documentation",
+                RepositoryIssueRequest = new RepositoryIssueRequest
+                {
+                    Milestone = milestoneNumber.ToString(),
+                    State = ItemStateFilter.Closed
+                }
+            };
+            repositoryIssueSectionRequest.RepositoryIssueRequest.Labels.Add("documentation");
+            return repositoryIssueSectionRequest;
+        }
     }
 }
