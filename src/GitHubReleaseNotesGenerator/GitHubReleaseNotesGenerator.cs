@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -32,10 +33,20 @@ namespace GitHubReleaseNotesGenerator
         {
             var response = new ReleaseNotesResponse { Milestone = releaseNotesRequest.Milestone };
 
-            response.Sections.AddRange(await ReleaseNoteSectionResponseBuilder.Create(GitHubClient, Repository, releaseNotesRequest.RepositoryIssueSections));
-            response.Sections.AddRange(await ReleaseNoteSectionResponseBuilder.Create(GitHubClient, releaseNotesRequest.SearchIssueSections));
+            response.Sections.AddRange(await ReleaseNoteSectionResponseService.Create(GitHubClient, Repository, releaseNotesRequest.RepositoryIssueSections));
+            response.Sections.AddRange(await ReleaseNoteSectionResponseService.Create(GitHubClient, releaseNotesRequest.SearchIssueSections));
 
             return response;
+        }
+
+        public async Task<string> CreateReleaseNotes(string milestone, bool includeContributors, List<SectionRequest> sectionRequests)
+        {
+            var repositoryIssueSections = RepositoryIssueSectionRequestBuilder.CreateRequests(milestone, sectionRequests);
+            var releaseNotesRequest = new ReleaseNotesRequest { Milestone = milestone, IncludeContributors = includeContributors, RepositoryIssueSections = repositoryIssueSections };
+
+            var releaseNotes = await CreateReleaseNotes(releaseNotesRequest);
+
+            return releaseNotes;
         }
 
         public async Task<string> CreateReleaseNotes(ReleaseNotesRequest releaseNotesRequest)
