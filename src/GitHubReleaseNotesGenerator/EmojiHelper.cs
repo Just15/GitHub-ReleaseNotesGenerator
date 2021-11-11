@@ -9,6 +9,7 @@ namespace GitHubReleaseNotesGenerator
             { "enhancement", ":star:" },
             { "bug", ":beetle:" },
             { "unlabeled", ":pushpin:" },
+            { "documentation", ":book:" },
             { "invalid", ":x:" },
             { "contributors", ":heart:" },
             { "build", ":wrench:" },
