@@ -8,7 +8,7 @@ namespace GitHubReleaseNotesGenerator
 {
     public static class ReleaseNotesRequestBuilder
     {
-        public static ReleaseNotesRequest Create(Repository repository, Milestone milestone, List<SectionRequest> sectionRequests)
+        public static ReleaseNotesRequest CreateCustom(Repository repository, Milestone milestone, List<SectionRequest> sectionRequests)
         {
             return new ReleaseNotesRequest
             {

@@ -39,16 +39,6 @@ namespace GitHubReleaseNotesGenerator
             return response;
         }
 
-        public async Task<string> CreateReleaseNotes(string milestone, bool includeContributors, List<SectionRequest> sectionRequests)
-        {
-            var repositoryIssueSections = RepositoryIssueSectionRequestBuilder.CreateRequests(milestone, sectionRequests);
-            var releaseNotesRequest = new ReleaseNotesRequest { Milestone = milestone, IncludeContributors = includeContributors, RepositoryIssueSections = repositoryIssueSections };
-
-            var releaseNotes = await CreateReleaseNotes(releaseNotesRequest);
-
-            return releaseNotes;
-        }
-
         public async Task<string> CreateReleaseNotes(ReleaseNotesRequest releaseNotesRequest)
         {
             var releaseNotesResponse = await GenerateReleaseNotes(releaseNotesRequest);
