@@ -38,7 +38,7 @@ ReleaseNotesRequest defaultRequest = ReleaseNotesRequestBuilder.CreateDefault(gi
 Create release notes for all labels and unlabeled issues.
 
 ```cs
-ReleaseNotesRequest allRequest = await ReleaseNotesRequestBuilder.CreateForAllLabels(gitHubReleaseNotesGenerator.GitHubClient, gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
+ReleaseNotesRequest allLabelsRequest = await ReleaseNotesRequestBuilder.CreateForAllLabels(gitHubReleaseNotesGenerator.GitHubClient, gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
 
 ```
 
@@ -64,7 +64,6 @@ Create a custom ```RepositoryIssueSectionRequest```.
 ```cs
 RepositoryIssueSectionRequest customRepositoryIssueSectionRequest = new RepositoryIssueSectionRequest
 {
-    Emoji = "[Emoji]",
     Title = "[Title]",
     RepositoryIssueRequest = new RepositoryIssueRequest
     {
@@ -78,7 +77,8 @@ RepositoryIssueSectionRequest customRepositoryIssueSectionRequest = new Reposito
         // SortProperty
         // SortDirection
         // Since
-    }
+    },
+    Emoji = "[Emoji]",
 };
 ```
 
@@ -86,7 +86,6 @@ Create a custom ```SearchIssueSectionRequest```.
 ```cs
 SearchIssueSectionRequest customSearchIssueSectionRequest = new SearchIssueSectionRequest
 {
-    Emoji = "[Emoji]",
     Title = "[Title]",
     SearchIssuesRequest = new SearchIssuesRequest
     {
@@ -117,7 +116,8 @@ SearchIssueSectionRequest customSearchIssueSectionRequest = new SearchIssueSecti
         // SortField
         // Repos
         // Exclusions
-    }
+    },
+    Emoji = "[Emoji]",
 };
 ```
 
