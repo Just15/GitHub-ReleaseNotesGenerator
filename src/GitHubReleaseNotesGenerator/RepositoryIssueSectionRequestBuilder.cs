@@ -35,22 +35,22 @@ namespace GitHubReleaseNotesGenerator
 
         public static RepositoryIssueSectionRequest CreateEnhancementRequest(int milestoneNumber)
         {
-            return CreateRequest(milestoneNumber, new SectionRequest { Emoji = "enhancement", Title = "Enhancements", Label = "enhancement" });
+            return CreateRequest(milestoneNumber, SectionRequestBuilder.CreateEnhancement());
         }
 
         public static RepositoryIssueSectionRequest CreateBugRequest(int milestoneNumber)
         {
-            return CreateRequest(milestoneNumber, new SectionRequest { Emoji = "bug", Title = "Bugs", Label = "bug" });
+            return CreateRequest(milestoneNumber, SectionRequestBuilder.CreateBug());
         }
 
         public static RepositoryIssueSectionRequest CreateBuildRequest(int milestoneNumber)
         {
-            return CreateRequest(milestoneNumber, new SectionRequest { Emoji = "build", Title = "Build", Label = "build" });
+            return CreateRequest(milestoneNumber, SectionRequestBuilder.CreateBuild());
         }
 
         public static RepositoryIssueSectionRequest CreateDocumentationRequest(int milestoneNumber)
         {
-            return CreateRequest(milestoneNumber, new SectionRequest { Emoji = "documentation", Title = "Documentation", Label = "documentation" });
+            return CreateRequest(milestoneNumber, SectionRequestBuilder.CreateDocumentation());
         }
     }
 }

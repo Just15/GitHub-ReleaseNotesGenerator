@@ -64,7 +64,7 @@ namespace GitHubReleaseNotesGenerator
                 }
                 else
                 {
-                    section = RepositoryIssueSectionRequestBuilder.CreateRequest(milestone.Number, new SectionRequest { Emoji = label, Title = label, Label = label });
+                    section = RepositoryIssueSectionRequestBuilder.CreateRequest(milestone.Number, new SectionRequest(label, label));
                 }
 
                 repositoryIssueSections.Add(section);

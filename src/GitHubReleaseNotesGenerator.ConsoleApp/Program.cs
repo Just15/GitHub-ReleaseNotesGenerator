@@ -19,12 +19,15 @@ namespace GitHubReleaseNotesGenerator.ConsoleApp
                 "Milestone 2",
                 new Credentials(gitHubToken));
 
-            var request = ReleaseNotesRequestBuilder.CreateCustom(gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone, new List<SectionRequest>
+            var basicRequest = ReleaseNotesRequestBuilder.CreateCustom(gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone, new List<SectionRequest>
             {
-                new SectionRequest { Emoji = "[Repalce]", Title = "[Repalce]", Label = "[Repalce]" },
+                new SectionRequest("[Title]", "[Label]"),
+                new SectionRequest("[Title]", "[Label]", "[Emoji]"),
+                SectionRequestBuilder.CreateBug()
             });
             var defaultRequest = ReleaseNotesRequestBuilder.CreateDefault(gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
             var allRequest = await ReleaseNotesRequestBuilder.CreateForAllLabels(gitHubReleaseNotesGenerator.GitHubClient, gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
+
 
             // Write release notes to file
             string tempFile = "ReleaseNotes.md";
