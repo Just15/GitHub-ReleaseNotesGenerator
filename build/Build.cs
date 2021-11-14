@@ -46,7 +46,7 @@ class Build : NukeBuild
         .Executes(() =>
         {
             gitHubReleaseNotesGenerator = new GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator(
-                RepositoryOwner, RepositoryName, Milestone, new Credentials(NugetApiKey));
+                RepositoryOwner, RepositoryName, Milestone, new Credentials(GitHubApiKey));
         });
 
     Target Clean => _ => _
@@ -109,7 +109,7 @@ class Build : NukeBuild
         .Requires(() => GitHubApiKey)
         .Executes(async () =>
         {
-            ControlFlow.Assert(GitVersion.BranchName.StartsWith("release/"), "Branch isn't a release.");
+            ControlFlow.Assert(GitVersion.BranchName.StartsWith("main"), "Branch isn't a release.");
 
             GitHubTasks.GitHubClient = new GitHubClient(new ProductHeaderValue(nameof(NukeBuild)))
             {
