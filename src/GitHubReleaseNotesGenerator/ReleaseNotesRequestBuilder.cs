@@ -8,6 +8,19 @@ namespace GitHubReleaseNotesGenerator
 {
     public static class ReleaseNotesRequestBuilder
     {
+        public static ReleaseNotesRequest CreateCustom(Repository repository, Milestone milestone, List<SectionRequest> sectionRequests)
+        {
+            return new ReleaseNotesRequest
+            {
+                Milestone = milestone.Title,
+                RepositoryIssueSections = RepositoryIssueSectionRequestBuilder.CreateRequests(milestone.Number, sectionRequests),
+                SearchIssueSections = new List<SearchIssueSectionRequest>
+                {
+                    SearchIssueSectionRequestBuilder.CreateUnlabeledRequest(repository.FullName, milestone.Title)
+                }
+            };
+        }
+
         public static ReleaseNotesRequest CreateDefault(Repository repository, Milestone milestone)
         {
             return new ReleaseNotesRequest
@@ -41,19 +54,17 @@ namespace GitHubReleaseNotesGenerator
                 {
                     section = RepositoryIssueSectionRequestBuilder.CreateBugRequest(milestone.Number);
                 }
+                else if (label == "build")
+                {
+                    section = RepositoryIssueSectionRequestBuilder.CreateBuildRequest(milestone.Number);
+                }
+                else if (label == "documentation")
+                {
+                    section = RepositoryIssueSectionRequestBuilder.CreateDocumentationRequest(milestone.Number);
+                }
                 else
                 {
-                    section = new RepositoryIssueSectionRequest
-                    {
-                        Emoji = EmojiHelper.TryGetEmoji(label),
-                        Title = label,
-                        RepositoryIssueRequest = new RepositoryIssueRequest
-                        {
-                            Milestone = milestone.Number.ToString(),
-                            State = ItemStateFilter.Closed
-                        }
-                    };
-                    section.RepositoryIssueRequest.Labels.Add(label);
+                    section = RepositoryIssueSectionRequestBuilder.CreateRequest(milestone.Number, new SectionRequest(label, label));
                 }
 
                 repositoryIssueSections.Add(section);

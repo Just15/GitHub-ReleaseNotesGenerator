@@ -5,7 +5,7 @@ using Octokit;
 
 namespace GitHubReleaseNotesGenerator
 {
-    public static class ReleaseNoteSectionResponseBuilder
+    public static class ReleaseNoteSectionResponseService
     {
         public static async Task<ReleaseNoteSectionResponse> Create(GitHubClient gitHubClient, Repository repository, RepositoryIssueSectionRequest repositoryIssueSectionRequest)
         {
