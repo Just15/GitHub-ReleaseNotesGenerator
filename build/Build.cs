@@ -22,21 +22,17 @@ class Build : NukeBuild
 {
     public static int Main() => Execute<Build>(x => x.Compile);
 
-    [Parameter("Configuration to build - Default is 'Debug' (local) or 'Release' (server)")]
-    readonly Configuration Configuration = IsLocalBuild ? Configuration.Debug : Configuration.Release;
-
     [Solution(GenerateProjects = true)] readonly Solution Solution;
     [GitVersion] readonly GitVersion GitVersion;
     [GitRepository] readonly GitRepository GitRepository;
 
     [Parameter] readonly string RepositoryOwner = "Just15";
     [Parameter] readonly string RepositoryName = "GitHubReleaseNotesGenerator";
-    [Parameter] readonly string Milestone = "0.1.0";
-    //[Parameter] readonly string GitHubAuthenticationToken = "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";
-    [Parameter] readonly string NuGetSource = "https://api.nuget.org/v3/index.json";
-    [Parameter] readonly string NugetApiKey = "oy2fznuthqtseh3fs5lal37sgupwwneejizu2j4t4c3lp4";
+    [Parameter] readonly string Milestone;
     [Parameter] readonly string GitHubSource = "https://nuget.pkg.github.com/Just15/index.json";
-    [Parameter] readonly string GitHubApiKey = "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";
+    [Parameter] readonly string GitHubApiKey;
+    [Parameter] readonly string NuGetSource = "https://api.nuget.org/v3/index.json";
+    [Parameter] readonly string NugetApiKey;
     [Parameter] readonly string SymbolSource = "https://nuget.smbsrc.net/";
     Release createdRelease;
 
@@ -44,17 +40,16 @@ class Build : NukeBuild
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
     GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator gitHubReleaseNotesGenerator;
-    private readonly string[] packageExtensions = new string[] { "*.nupkg", "*.snupkg" };
 
     Target Initialize => _ => _
+        .Requires(() => Milestone)
         .Executes(() =>
         {
             gitHubReleaseNotesGenerator = new GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator(
-                RepositoryOwner, RepositoryName, Milestone, new Credentials("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"));
+                RepositoryOwner, RepositoryName, Milestone, new Credentials(NugetApiKey));
         });
 
     Target Clean => _ => _
-        .DependsOn(Initialize)
         .Executes(() =>
         {
             SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
@@ -75,7 +70,7 @@ class Build : NukeBuild
         {
             DotNetBuild(s => s
                 .SetProjectFile(Solution)
-                .SetConfiguration(Configuration)
+                .SetConfiguration("Release")
                 .SetAssemblyVersion(GitVersion.AssemblySemVer)
                 .SetFileVersion(GitVersion.AssemblySemFileVer)
                 .SetInformationalVersion(GitVersion.InformationalVersion)
@@ -89,7 +84,7 @@ class Build : NukeBuild
         {
             DotNetTest(s => s
                 .SetProjectFile(Solution)
-                .SetConfiguration(Configuration)
+                .SetConfiguration("Release")
                 .EnableNoRestore()
                 .EnableNoBuild());
         });
@@ -102,16 +97,16 @@ class Build : NukeBuild
                 .SetProject(Solution.GetProject(Solution.GitHubReleaseNotesGenerator))
                 .SetVersion(GitVersion.MajorMinorPatch)
                 .SetOutputDirectory(ArtifactsDirectory)
-                .SetConfiguration(Configuration)
+                .SetConfiguration("Release")
                 .EnableIncludeSymbols()
                 .SetSymbolPackageFormat(DotNetSymbolPackageFormat.snupkg)
                 .EnableContinuousIntegrationBuild());
         });
 
     Target CreateGitHubRelease => _ => _
+        .DependsOn(Initialize)
         .DependsOn(Pack)
         .Requires(() => GitHubApiKey)
-        .Requires(() => Configuration.Equals(Configuration.Release))
         .Executes(async () =>
         {
             ControlFlow.Assert(GitVersion.BranchName.StartsWith("release/"), "Branch isn't a release.");
@@ -129,7 +124,7 @@ class Build : NukeBuild
                 TargetCommitish = GitVersion.Sha,
                 Name = GitVersion.MajorMinorPatch,
                 Body = await gitHubReleaseNotesGenerator.CreateReleaseNotes(allRequest),
-                Draft = true,
+                //Draft = true,
             };
 
             createdRelease = await GitHubTasks.GitHubClient.Repository.Release.Create(GitRepository.GetGitHubOwner(), GitRepository.GetGitHubName(), newRelease);
@@ -142,7 +137,7 @@ class Build : NukeBuild
         {
             ControlFlow.NotNull(createdRelease, $"'createdRelease' is null.");
 
-            GlobFiles(ArtifactsDirectory, packageExtensions)
+            GlobFiles(ArtifactsDirectory, "*.nupkg")
                 .NotEmpty()
                 .ForEach(x =>
                 {
@@ -170,7 +165,7 @@ class Build : NukeBuild
         .Unlisted()
         .Executes(() =>
         {
-            GlobFiles(ArtifactsDirectory, packageExtensions)
+            GlobFiles(ArtifactsDirectory, "*.nupkg")
                 .NotEmpty()
                 .ForEach(x =>
                 {
@@ -190,7 +185,7 @@ class Build : NukeBuild
         .Unlisted()
         .Executes(() =>
         {
-            GlobFiles(ArtifactsDirectory, packageExtensions)
+            GlobFiles(ArtifactsDirectory, "*.nupkg")
                 .NotEmpty()
                 .ForEach(x =>
                 {

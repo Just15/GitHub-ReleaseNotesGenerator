@@ -9,6 +9,7 @@ namespace GitHubReleaseNotesGenerator
             { "enhancement", ":star:" },
             { "bug", ":beetle:" },
             { "unlabeled", ":pushpin:" },
+            { "documentation", ":book:" },
             { "invalid", ":x:" },
             { "contributors", ":heart:" },
             { "build", ":wrench:" },
@@ -17,8 +18,7 @@ namespace GitHubReleaseNotesGenerator
 
         public static string TryGetEmoji(string title)
         {
-            var containsKey = EmojiDictionary.TryGetValue(title, out string outEmoji);
-            if (!containsKey)
+            if (!EmojiDictionary.TryGetValue(title, out string outEmoji))
             {
                 outEmoji = string.Empty;
             }

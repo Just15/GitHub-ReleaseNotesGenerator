@@ -32,8 +32,8 @@ namespace GitHubReleaseNotesGenerator
         {
             var response = new ReleaseNotesResponse { Milestone = releaseNotesRequest.Milestone };
 
-            response.Sections.AddRange(await ReleaseNoteSectionResponseBuilder.Create(GitHubClient, Repository, releaseNotesRequest.RepositoryIssueSections));
-            response.Sections.AddRange(await ReleaseNoteSectionResponseBuilder.Create(GitHubClient, releaseNotesRequest.SearchIssueSections));
+            response.Sections.AddRange(await ReleaseNoteSectionResponseService.Create(GitHubClient, Repository, releaseNotesRequest.RepositoryIssueSections));
+            response.Sections.AddRange(await ReleaseNoteSectionResponseService.Create(GitHubClient, releaseNotesRequest.SearchIssueSections));
 
             return response;
         }

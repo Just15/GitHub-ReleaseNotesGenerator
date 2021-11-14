@@ -5,7 +5,7 @@ using Octokit;
 
 namespace GitHubReleaseNotesGenerator
 {
-    public static class ReleaseNoteSectionResponseBuilder
+    public static class ReleaseNoteSectionResponseService
     {
         public static async Task<ReleaseNoteSectionResponse> Create(GitHubClient gitHubClient, Repository repository, RepositoryIssueSectionRequest repositoryIssueSectionRequest)
         {
@@ -14,7 +14,6 @@ namespace GitHubReleaseNotesGenerator
             return new ReleaseNoteSectionResponse
             {
                 Emoji = repositoryIssueSectionRequest.Emoji,
-                DefultEmoji = repositoryIssueSectionRequest.DefultEmoji,
                 Title = repositoryIssueSectionRequest.Title,
                 Issues = issues
             };
@@ -39,7 +38,6 @@ namespace GitHubReleaseNotesGenerator
             return new ReleaseNoteSectionResponse
             {
                 Emoji = searchIssueSectionRequest.Emoji,
-                DefultEmoji = searchIssueSectionRequest.DefultEmoji,
                 Title = searchIssueSectionRequest.Title,
                 Issues = searchIssueResult.Items
             };
