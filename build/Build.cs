@@ -109,7 +109,7 @@ class Build : NukeBuild
         .Requires(() => GitHubApiKey)
         .Executes(async () =>
         {
-            ControlFlow.Assert(GitVersion.BranchName.StartsWith("main"), "Branch isn't a release.");
+            ControlFlow.Assert(GitVersion.BranchName.StartsWith("main"), "Branch isn't main.");
 
             GitHubTasks.GitHubClient = new GitHubClient(new ProductHeaderValue(nameof(NukeBuild)))
             {
@@ -127,7 +127,8 @@ class Build : NukeBuild
                 //Draft = true,
             };
 
-            createdRelease = await GitHubTasks.GitHubClient.Repository.Release.Create(GitRepository.GetGitHubOwner(), GitRepository.GetGitHubName(), newRelease);
+            createdRelease = await GitHubTasks.GitHubClient.Repository.Release.Create(
+                GitRepository.GetGitHubOwner(), GitRepository.GetGitHubName(), newRelease);
         });
 
     Target UploadReleaseAssetsToGithub => _ => _
