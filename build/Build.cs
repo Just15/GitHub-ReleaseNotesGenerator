@@ -10,6 +10,7 @@ using Nuke.Common.Tools.GitHub;
 using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Utilities.Collections;
 using Octokit;
+using System;
 using System.IO;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
@@ -41,17 +42,12 @@ class Build : NukeBuild
 
     GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator gitHubReleaseNotesGenerator;
 
-    Target Initialize => _ => _
-        .Requires(() => Milestone)
-        .Executes(() =>
-        {
-            gitHubReleaseNotesGenerator = new GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator(
-                RepositoryOwner, RepositoryName, Milestone, new Credentials(GitHubApiKey));
-        });
-
     Target Clean => _ => _
         .Executes(() =>
         {
+            Console.WriteLine(GitRepository.GetGitHubOwner());
+            Console.WriteLine(GitRepository.GetGitHubName());
+
             SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
             EnsureCleanDirectory(ArtifactsDirectory);
         });
@@ -104,31 +100,29 @@ class Build : NukeBuild
         });
 
     Target CreateGitHubRelease => _ => _
-        .DependsOn(Initialize)
         .DependsOn(Pack)
         .Requires(() => GitHubApiKey)
+        .OnlyWhenStatic(() => GitVersion.BranchName.Equals("main") || GitVersion.BranchName.Equals("origin/main"))
         .Executes(async () =>
         {
-            ControlFlow.Assert(GitVersion.BranchName.StartsWith("main"), "Branch isn't main.");
+            //GitHubTasks.GitHubClient = new GitHubClient(new ProductHeaderValue(nameof(NukeBuild)))
+            //{
+            //    Credentials = new Credentials(GitHubApiKey)
+            //};
 
-            GitHubTasks.GitHubClient = new GitHubClient(new ProductHeaderValue(nameof(NukeBuild)))
-            {
-                Credentials = new Credentials(GitHubApiKey)
-            };
+            //var allRequest = await GitHubReleaseNotesGenerator.ReleaseNotesRequestBuilder.CreateForAllLabels(
+            //    gitHubReleaseNotesGenerator.GitHubClient, gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
 
-            var allRequest = await GitHubReleaseNotesGenerator.ReleaseNotesRequestBuilder.CreateForAllLabels(
-                gitHubReleaseNotesGenerator.GitHubClient, gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
+            //var newRelease = new NewRelease(GitVersion.MajorMinorPatch)
+            //{
+            //    TargetCommitish = GitVersion.Sha,
+            //    Name = GitVersion.MajorMinorPatch,
+            //    Body = await gitHubReleaseNotesGenerator.CreateReleaseNotes(allRequest),
+            //    //Draft = true,
+            //};
 
-            var newRelease = new NewRelease(GitVersion.MajorMinorPatch)
-            {
-                TargetCommitish = GitVersion.Sha,
-                Name = GitVersion.MajorMinorPatch,
-                Body = await gitHubReleaseNotesGenerator.CreateReleaseNotes(allRequest),
-                //Draft = true,
-            };
-
-            createdRelease = await GitHubTasks.GitHubClient.Repository.Release.Create(
-                GitRepository.GetGitHubOwner(), GitRepository.GetGitHubName(), newRelease);
+            //createdRelease = await GitHubTasks.GitHubClient.Repository.Release.Create(
+            //    GitRepository.GetGitHubOwner(), GitRepository.GetGitHubName(), newRelease);
         });
 
     Target UploadReleaseAssetsToGithub => _ => _

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,48 +10,51 @@ namespace GitHubReleaseNotesGenerator
 {
     public class GitHubReleaseNotesGenerator
     {
-        public GitHubClient GitHubClient { get; private set; }
-        public Repository Repository { get; private set; }
-        public Milestone Milestone { get; private set; }
+        private readonly GitHubClient gitHubClient;
+        private readonly Repository repository;
 
-        public GitHubReleaseNotesGenerator(string repositoryOwner, string repositoryName, string milestoneTitle, Credentials credentials)
+        public GitHubReleaseNotesGenerator(string repositoryOwner, string repositoryName)
         {
-            GitHubClient = new GitHubClient(new ProductHeaderValue(repositoryName))
-            {
-                Credentials = credentials
-            };
+            gitHubClient = new GitHubClient(new ProductHeaderValue(repositoryName));
+        }
 
-            Repository = GitHubClient.Repository.Get(repositoryOwner, repositoryName).Result;
-            Milestone = GitHubClient.Issue.Milestone.GetAllForRepository(Repository.Id).Result.SingleOrDefault(m => m.Title == milestoneTitle);
-            if (Milestone == null)
+        public GitHubReleaseNotesGenerator(string repositoryOwner, string repositoryName, Credentials credentials) : this(repositoryOwner, repositoryName)
+        {
+            gitHubClient.Credentials = credentials;
+            repository = gitHubClient.Repository.Get(repositoryOwner, repositoryName).Result;
+        }
+
+        public async Task<string> Generate(string milestoneTitle, Changelog changelog)
+        {
+            var milestone = gitHubClient.Issue.Milestone.GetAllForRepository(repository.Id).Result.SingleOrDefault(m => m.Title == milestoneTitle);
+            if (milestone == null)
             {
                 throw new ArgumentException($"A milestone with name '{milestoneTitle}' doesn't exist.");
             }
-        }
-
-        public async Task<ReleaseNotesResponse> GenerateReleaseNotes(ReleaseNotesRequest releaseNotesRequest)
-        {
-            var response = new ReleaseNotesResponse { Milestone = releaseNotesRequest.Milestone };
-
-            response.Sections.AddRange(await ReleaseNoteSectionResponseService.Create(GitHubClient, Repository, releaseNotesRequest.RepositoryIssueSections));
-            response.Sections.AddRange(await ReleaseNoteSectionResponseService.Create(GitHubClient, releaseNotesRequest.SearchIssueSections));
-
-            return response;
-        }
-
-        public async Task<string> CreateReleaseNotes(ReleaseNotesRequest releaseNotesRequest)
-        {
-            var releaseNotesResponse = await GenerateReleaseNotes(releaseNotesRequest);
 
             var stringBuilder = new StringBuilder();
-            MarkdownWriterService.WriteReleaseNoteSections(stringBuilder, releaseNotesResponse.Sections);
-
-            // Contributors
-            if (releaseNotesRequest.IncludeContributors)
+            foreach (var category in changelog.Categories)
             {
-                var contributors = ContributorsService.GetContributors(releaseNotesResponse.Sections);
-                MarkdownWriterService.WriteUsers(stringBuilder, contributors, $"# :heart: Contributors", "## We'd like to thank all the contributors who worked on this release!");
-                stringBuilder.AppendLine();
+                var searchIssuesRequest = new SearchIssuesRequest
+                {
+                    Repos = new RepositoryCollection { repository.FullName },
+                    Milestone = milestoneTitle,
+                    Type = IssueTypeQualifier.Issue,
+                    State = ItemState.Closed,
+                };
+
+                if (category.Labels != null && category.Labels.All(label => !string.IsNullOrEmpty(label)))
+                {
+                    searchIssuesRequest.Labels = category.Labels;
+                }
+                else
+                {
+                    searchIssuesRequest.No = IssueNoMetadataQualifier.Label;
+                }
+
+                var searchIssuesResult = await gitHubClient.Search.SearchIssues(searchIssuesRequest);
+
+                MarkdownGenerator.GenerateIssueText(stringBuilder, category.Title, searchIssuesResult);
             }
 
             return stringBuilder.ToString();

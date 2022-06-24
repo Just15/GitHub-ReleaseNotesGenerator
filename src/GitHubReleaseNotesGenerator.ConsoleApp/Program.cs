@@ -11,67 +11,37 @@ namespace GitHubReleaseNotesGenerator.ConsoleApp
     {
         private static async Task Main(string[] args)
         {
-            // Get Credentials
-            string tokenFilePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "GitHubToken.txt");
-            string gitHubToken = File.ReadAllText(tokenFilePath);
-
-            // Getting Started
             var gitHubReleaseNotesGenerator = new GitHubReleaseNotesGenerator(
-                "[Repository Owner]",
-                "[Repository Name]",
-                "[Milestone Title]",
-                new Credentials("[GitHub Token]"));
+                "Just15",
+                "GitVersion-PdfSharpWrapper",
+                new Credentials("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"));
 
-            // Default Request
-            var defaultRequest = ReleaseNotesRequestBuilder.CreateDefault(gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
-
-            // All Labels Request
-            var allLabelsRequest = await ReleaseNotesRequestBuilder.CreateForAllLabels(gitHubReleaseNotesGenerator.GitHubClient, gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
-
-            // Basic Request
-            var basicRequest = ReleaseNotesRequestBuilder.CreateCustom(gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone, new List<SectionRequest>
+            var changelog = new Changelog
             {
-                new SectionRequest("[Title]", "[Label]"),
-                new SectionRequest("[Title]", "[Label]", "[Emoji]"),
-                SectionRequestBuilder.CreateBug()
-            });
-
-            // Advanced Request
-            var advancedRequest = new ReleaseNotesRequest
-            {
-                Milestone = gitHubReleaseNotesGenerator.Milestone.Title,
-                RepositoryIssueSections = new List<RepositoryIssueSectionRequest>
+                Categories = new List<Category>
                 {
-                    new RepositoryIssueSectionRequest
+                    new Category
                     {
-                        Title = "[Title]",
-                        RepositoryIssueRequest = new RepositoryIssueRequest
-                        {
-                            // Specify options
-                        },
-                        Emoji = "[Emoji]",
-                    }
-                },
-                SearchIssueSections = new List<SearchIssueSectionRequest>
-                {
-                    new SearchIssueSectionRequest
+                        Title = ":star: Enhancement",
+                        Labels = new List<string> { "enhancement" },
+                    },
+                    new Category
                     {
-                        Title = "[Title]",
-                        SearchIssuesRequest = new SearchIssuesRequest
-                        {
-                            // Specify options
-                        },
-                        Emoji = "[Emoji]",
-                    }
+                        Title = ":beetle: Bugs",
+                        Labels = new List<string> { "bug" },
+                    },
+                    new Category
+                    {
+                        Title = ":pushpin: No Label",
+                        Labels = null,
+                    },
                 }
             };
 
-            // Generating Release Notes
-            var releaseNotes = await gitHubReleaseNotesGenerator.CreateReleaseNotes(defaultRequest);
+            var releaseNotes = await gitHubReleaseNotesGenerator.Generate("Milestone 2", changelog);
 
-            // Write Release Notes to File
-            string tempFile = "ReleaseNotes.md";
-            File.WriteAllText(tempFile, releaseNotes);
+            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "ReleaseNotesTest.md");
+            File.WriteAllText(filePath, releaseNotes);
         }
     }
 }
