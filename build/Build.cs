@@ -103,7 +103,7 @@ class Build : NukeBuild
         .DependsOn(Pack)
         .Requires(() => GitHubApiKey)
         .OnlyWhenStatic(() => GitVersion.BranchName.Equals("main") || GitVersion.BranchName.Equals("origin/main"))
-        .Executes(async () =>
+        .Executes(() =>
         {
             //GitHubTasks.GitHubClient = new GitHubClient(new ProductHeaderValue(nameof(NukeBuild)))
             //{
@@ -130,7 +130,7 @@ class Build : NukeBuild
         .Unlisted()
         .Executes(() =>
         {
-            ControlFlow.NotNull(createdRelease, $"'createdRelease' is null.");
+            Assert.NotNull(createdRelease, $"'createdRelease' is null.");
 
             GlobFiles(ArtifactsDirectory, "*.nupkg")
                 .NotEmpty()
