@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using GitHubReleaseNotesGenerator.Models;
 using Octokit;
@@ -12,9 +10,9 @@ namespace GitHubReleaseNotesGenerator.ConsoleApp
         private static async Task Main(string[] args)
         {
             var gitHubReleaseNotesGenerator = new GitHubReleaseNotesGenerator(
-                "Just15",
-                "GitVersion-PdfSharpWrapper",
-                new Credentials("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"));
+                "[Repository Owner]",
+                "[Repository Name]",
+                new Credentials("[GitHub Token]"));
 
             var changelog = new Changelog
             {
@@ -35,13 +33,11 @@ namespace GitHubReleaseNotesGenerator.ConsoleApp
                         Title = ":pushpin: No Label",
                         Labels = null,
                     },
-                }
+                },
+                IncludeContributors = true,
             };
 
-            var releaseNotes = await gitHubReleaseNotesGenerator.Generate("Milestone 2", changelog);
-
-            string filePath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), "ReleaseNotesTest.md");
-            File.WriteAllText(filePath, releaseNotes);
+            var releaseNotes = await gitHubReleaseNotesGenerator.Generate("[Milestone Title]", changelog);
         }
     }
 }

@@ -1,7 +1,7 @@
+using System.IO;
 using Microsoft.AspNetCore.StaticFiles;
 using Nuke.Common;
 using Nuke.Common.CI;
-using Nuke.Common.Execution;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
@@ -10,8 +10,6 @@ using Nuke.Common.Tools.GitHub;
 using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Utilities.Collections;
 using Octokit;
-using System;
-using System.IO;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
@@ -34,19 +32,16 @@ class Build : NukeBuild
     [Parameter] readonly string NuGetSource = "https://api.nuget.org/v3/index.json";
     [Parameter] readonly string NugetApiKey;
     [Parameter] readonly string SymbolSource = "https://nuget.smbsrc.net/";
-    Release createdRelease;
+    readonly Release createdRelease;
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
-    GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator gitHubReleaseNotesGenerator;
+    readonly GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator gitHubReleaseNotesGenerator;
 
     Target Clean => _ => _
         .Executes(() =>
         {
-            Console.WriteLine(GitRepository.GetGitHubOwner());
-            Console.WriteLine(GitRepository.GetGitHubName());
-
             SourceDirectory.GlobDirectories("**/bin", "**/obj").ForEach(DeleteDirectory);
             EnsureCleanDirectory(ArtifactsDirectory);
         });
