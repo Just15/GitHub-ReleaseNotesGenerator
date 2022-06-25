@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿//using System.Collections.Generic;
 
-namespace GitHubReleaseNotesGenerator.Models
-{
-    public class Exclude
-    {
-        public List<string> Labels { get; set; }
-        public List<string> Authors { get; set; }
-    }
-}
+//namespace GitHubReleaseNotesGenerator.Models
+//{
+//    public class Exclude
+//    {
+//        public List<string> Labels { get; set; }
+//        public List<string> Authors { get; set; }
+//    }
+//}

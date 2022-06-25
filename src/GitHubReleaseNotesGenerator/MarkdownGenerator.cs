@@ -1,23 +1,61 @@
-﻿using System.Text;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Octokit;
 
 namespace GitHubReleaseNotesGenerator
 {
-    public static class MarkdownGenerator
+    internal static class MarkdownGenerator
     {
-        public static void GenerateIssueText(StringBuilder stringBuilder, string title, SearchIssuesResult searchIssuesResult)
+        internal static string GenerateIssueText(List<(string Title, SearchIssuesResult SearchIssuesResult)> results)
         {
-            if (searchIssuesResult.TotalCount > 0)
-            {
-                stringBuilder.AppendLine($"# {title}");
-                stringBuilder.AppendLine();
+            var stringBuilder = new StringBuilder();
 
-                foreach (var item in searchIssuesResult.Items)
+            foreach (var result in results)
+            {
+                if (result.SearchIssuesResult.TotalCount > 0)
                 {
-                    stringBuilder.AppendLine($"* [#{item.Number}]({item.HtmlUrl}) {item.Title}");
+                    stringBuilder.AppendLine($"# {result.Title}");
+                    stringBuilder.AppendLine();
+
+                    foreach (var item in result.SearchIssuesResult.Items)
+                    {
+                        stringBuilder.AppendLine($"* [#{item.Number}]({item.HtmlUrl}) {item.Title}");
+                    }
+                    stringBuilder.AppendLine();
                 }
-                stringBuilder.AppendLine();
             }
+
+            return stringBuilder.ToString();
+        }
+
+        internal static string GenerateContributorsText(List<(string Title, SearchIssuesResult SearchIssuesResult)> results)
+        {
+            var users = new List<User>();
+            foreach (var result in results)
+            {
+                foreach (var item in result.SearchIssuesResult.Items)
+                {
+                    foreach (var assignee in item.Assignees)
+                    {
+                        if (users.SingleOrDefault(c => c.Name == assignee.Name) == null)
+                        {
+                            users.Add(assignee);
+                        }
+                    }
+                }
+            }
+
+            var stringBuilder = new StringBuilder();
+            stringBuilder.AppendLine("# :heart: Contributors");
+            stringBuilder.AppendLine();
+            stringBuilder.AppendLine("## We'd like to thank all the contributors who worked on this release!");
+            stringBuilder.AppendLine();
+            foreach (var user in users)
+            {
+                stringBuilder.AppendLine($"* [{user.Name ?? user.Login}]({user.HtmlUrl})");
+            }
+            return stringBuilder.ToString();
         }
     }
 }
