@@ -1,7 +1,7 @@
+using System.IO;
 using Microsoft.AspNetCore.StaticFiles;
 using Nuke.Common;
 using Nuke.Common.CI;
-using Nuke.Common.Execution;
 using Nuke.Common.Git;
 using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
@@ -10,12 +10,10 @@ using Nuke.Common.Tools.GitHub;
 using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Utilities.Collections;
 using Octokit;
-using System.IO;
 using static Nuke.Common.IO.FileSystemTasks;
 using static Nuke.Common.IO.PathConstruction;
 using static Nuke.Common.Tools.DotNet.DotNetTasks;
 
-[CheckBuildProjectConfigurations]
 [ShutdownDotNetAfterServerBuild]
 [DotNetVerbosityMapping]
 class Build : NukeBuild
@@ -34,20 +32,12 @@ class Build : NukeBuild
     [Parameter] readonly string NuGetSource = "https://api.nuget.org/v3/index.json";
     [Parameter] readonly string NugetApiKey;
     [Parameter] readonly string SymbolSource = "https://nuget.smbsrc.net/";
-    Release createdRelease;
+    readonly Release createdRelease;
 
     AbsolutePath SourceDirectory => RootDirectory / "src";
     AbsolutePath ArtifactsDirectory => RootDirectory / "artifacts";
 
-    GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator gitHubReleaseNotesGenerator;
-
-    Target Initialize => _ => _
-        .Requires(() => Milestone)
-        .Executes(() =>
-        {
-            gitHubReleaseNotesGenerator = new GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator(
-                RepositoryOwner, RepositoryName, Milestone, new Credentials(GitHubApiKey));
-        });
+    readonly GitHubReleaseNotesGenerator.GitHubReleaseNotesGenerator gitHubReleaseNotesGenerator;
 
     Target Clean => _ => _
         .Executes(() =>
@@ -104,31 +94,29 @@ class Build : NukeBuild
         });
 
     Target CreateGitHubRelease => _ => _
-        .DependsOn(Initialize)
         .DependsOn(Pack)
         .Requires(() => GitHubApiKey)
-        .Executes(async () =>
+        .OnlyWhenStatic(() => GitVersion.BranchName.Equals("main") || GitVersion.BranchName.Equals("origin/main"))
+        .Executes(() =>
         {
-            ControlFlow.Assert(GitVersion.BranchName.StartsWith("main"), "Branch isn't main.");
+            //GitHubTasks.GitHubClient = new GitHubClient(new ProductHeaderValue(nameof(NukeBuild)))
+            //{
+            //    Credentials = new Credentials(GitHubApiKey)
+            //};
 
-            GitHubTasks.GitHubClient = new GitHubClient(new ProductHeaderValue(nameof(NukeBuild)))
-            {
-                Credentials = new Credentials(GitHubApiKey)
-            };
+            //var allRequest = await GitHubReleaseNotesGenerator.ReleaseNotesRequestBuilder.CreateForAllLabels(
+            //    gitHubReleaseNotesGenerator.GitHubClient, gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
 
-            var allRequest = await GitHubReleaseNotesGenerator.ReleaseNotesRequestBuilder.CreateForAllLabels(
-                gitHubReleaseNotesGenerator.GitHubClient, gitHubReleaseNotesGenerator.Repository, gitHubReleaseNotesGenerator.Milestone);
+            //var newRelease = new NewRelease(GitVersion.MajorMinorPatch)
+            //{
+            //    TargetCommitish = GitVersion.Sha,
+            //    Name = GitVersion.MajorMinorPatch,
+            //    Body = await gitHubReleaseNotesGenerator.CreateReleaseNotes(allRequest),
+            //    //Draft = true,
+            //};
 
-            var newRelease = new NewRelease(GitVersion.MajorMinorPatch)
-            {
-                TargetCommitish = GitVersion.Sha,
-                Name = GitVersion.MajorMinorPatch,
-                Body = await gitHubReleaseNotesGenerator.CreateReleaseNotes(allRequest),
-                //Draft = true,
-            };
-
-            createdRelease = await GitHubTasks.GitHubClient.Repository.Release.Create(
-                GitRepository.GetGitHubOwner(), GitRepository.GetGitHubName(), newRelease);
+            //createdRelease = await GitHubTasks.GitHubClient.Repository.Release.Create(
+            //    GitRepository.GetGitHubOwner(), GitRepository.GetGitHubName(), newRelease);
         });
 
     Target UploadReleaseAssetsToGithub => _ => _
@@ -136,7 +124,7 @@ class Build : NukeBuild
         .Unlisted()
         .Executes(() =>
         {
-            ControlFlow.NotNull(createdRelease, $"'createdRelease' is null.");
+            Assert.NotNull(createdRelease, $"'createdRelease' is null.");
 
             GlobFiles(ArtifactsDirectory, "*.nupkg")
                 .NotEmpty()

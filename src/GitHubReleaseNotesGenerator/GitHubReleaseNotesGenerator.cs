@@ -9,50 +9,38 @@ namespace GitHubReleaseNotesGenerator
 {
     public class GitHubReleaseNotesGenerator
     {
-        public GitHubClient GitHubClient { get; private set; }
-        public Repository Repository { get; private set; }
-        public Milestone Milestone { get; private set; }
+        private readonly GitHubClient gitHubClient;
+        private readonly Repository repository;
+        private readonly GitHubSearchIssuesService gitHubSearchIssuesService;
 
-        public GitHubReleaseNotesGenerator(string repositoryOwner, string repositoryName, string milestoneTitle, Credentials credentials)
+        public GitHubReleaseNotesGenerator(string repositoryOwner, string repositoryName)
         {
-            GitHubClient = new GitHubClient(new ProductHeaderValue(repositoryName))
-            {
-                Credentials = credentials
-            };
+            gitHubClient = new GitHubClient(new ProductHeaderValue(repositoryName));
+        }
 
-            Repository = GitHubClient.Repository.Get(repositoryOwner, repositoryName).Result;
-            Milestone = GitHubClient.Issue.Milestone.GetAllForRepository(Repository.Id).Result.SingleOrDefault(m => m.Title == milestoneTitle);
-            if (Milestone == null)
+        public GitHubReleaseNotesGenerator(string repositoryOwner, string repositoryName, Credentials credentials) : this(repositoryOwner, repositoryName)
+        {
+            gitHubClient.Credentials = credentials;
+            repository = gitHubClient.Repository.Get(repositoryOwner, repositoryName).Result;
+            gitHubSearchIssuesService = new GitHubSearchIssuesService(gitHubClient, repository);
+        }
+
+        public async Task<string> Generate(string milestoneTitle, Changelog changelog)
+        {
+            var milestone = gitHubClient.Issue.Milestone.GetAllForRepository(repository.Id).Result.SingleOrDefault(m => m.Title == milestoneTitle);
+            if (milestone == null)
             {
                 throw new ArgumentException($"A milestone with name '{milestoneTitle}' doesn't exist.");
             }
-        }
 
-        public async Task<ReleaseNotesResponse> GenerateReleaseNotes(ReleaseNotesRequest releaseNotesRequest)
-        {
-            var response = new ReleaseNotesResponse { Milestone = releaseNotesRequest.Milestone };
-
-            response.Sections.AddRange(await ReleaseNoteSectionResponseService.Create(GitHubClient, Repository, releaseNotesRequest.RepositoryIssueSections));
-            response.Sections.AddRange(await ReleaseNoteSectionResponseService.Create(GitHubClient, releaseNotesRequest.SearchIssueSections));
-
-            return response;
-        }
-
-        public async Task<string> CreateReleaseNotes(ReleaseNotesRequest releaseNotesRequest)
-        {
-            var releaseNotesResponse = await GenerateReleaseNotes(releaseNotesRequest);
+            var searchIssuesResults = await gitHubSearchIssuesService.Search(milestoneTitle, changelog);
 
             var stringBuilder = new StringBuilder();
-            MarkdownWriterService.WriteReleaseNoteSections(stringBuilder, releaseNotesResponse.Sections);
-
-            // Contributors
-            if (releaseNotesRequest.IncludeContributors)
+            stringBuilder.Append(MarkdownGenerator.GenerateIssueText(searchIssuesResults));
+            if (changelog.IncludeContributors)
             {
-                var contributors = ContributorsService.GetContributors(releaseNotesResponse.Sections);
-                MarkdownWriterService.WriteUsers(stringBuilder, contributors, $"# :heart: Contributors", "## We'd like to thank all the contributors who worked on this release!");
-                stringBuilder.AppendLine();
+                stringBuilder.Append(MarkdownGenerator.GenerateContributorsText(searchIssuesResults));
             }
-
             return stringBuilder.ToString();
         }
     }
