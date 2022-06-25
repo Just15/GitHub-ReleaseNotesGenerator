@@ -1,6 +1,6 @@
-# GitHubReleaseNotesGenerator
+# GitHub-ReleaseNotesGenerator
 
-GitHubReleaseNotesGenerator is a tool to generate GitHub release notes based on labels and searches.
+GitHub-ReleaseNotesGenerator is a tool to generate GitHub release notes based on labels.
 
 Example project: [Here](https://github.com/Just15/GitHubReleaseNotesGenerator/blob/main/src/GitHubReleaseNotesGenerator.ConsoleApp/Program.cs)
 
@@ -8,15 +8,49 @@ Example Release Notes : [Here](https://github.com/Just15/GitHubReleaseNotesGener
 
 ## Getting Started
 
-Specifiy repository owner, name, milestone, and GitHub credentials.
+Specifiy repository owner, name, and GitHub credentials (if repository is private).
 
-```cs
+```csharp
 GitHubReleaseNotesGenerator gitHubReleaseNotesGenerator = new GitHubReleaseNotesGenerator(
     "[Repository Owner]",
     "[Repository Name]",
-    "[Milestone Name]",
     new Credentials("[GitHub Token]"));
 ```
+
+Specifiy title and list of labels.
+
+```csharp
+var changelog = new Changelog
+{
+    Categories = new List<Category>
+    {
+        new Category
+        {
+            Title = ":star: Enhancement",
+            Labels = new List<string> { "enhancement" },
+        },
+        new Category
+        {
+            Title = ":beetle: Bugs",
+            Labels = new List<string> { "bug" },
+        },
+        new Category
+        {
+            Title = ":pushpin: No Label",
+            Labels = null,
+        },
+    },
+    IncludeContributors = true,
+};
+```
+
+
+
+
+
+
+
+
 
 ## Generating Release Notes
 
