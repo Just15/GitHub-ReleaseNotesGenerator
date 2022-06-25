@@ -44,6 +44,12 @@ var changelog = new Changelog
 };
 ```
 
+Generate release notes.
+
+```csharp
+var releaseNotes = await gitHubReleaseNotesGenerator.Generate("[Milestone Title]", changelog);
+```
+
 ## :star: Powered By:
 * [.NET](https://dotnet.microsoft.com/download)
 * [NUKE Build](https://www.nuke.build/index.html)
